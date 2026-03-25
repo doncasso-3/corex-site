@@ -360,7 +360,7 @@ export default function App() {
           position:"absolute", top:24, left:"50%", transform:"translateX(-50%)",
           zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", gap:"6px",
         }}>
-          <svg width={21} height={21} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width={24} height={24} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="11" y="11" width="14" height="14" rx="2" stroke="white" strokeWidth="2.2" fill="none"/>
             <line x1="11" y1="11" x2="4"  y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
             <line x1="25" y1="11" x2="32" y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>

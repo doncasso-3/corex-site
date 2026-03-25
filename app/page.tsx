@@ -358,18 +358,19 @@ export default function App() {
       {isMobile ? (
         <div style={{
           position:"absolute", top:24, left:"50%", transform:"translateX(-50%)",
-          zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", gap:"8px",
+          zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", gap:"6px",
         }}>
-          <svg width={18} height={18} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width={21} height={21} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="11" y="11" width="14" height="14" rx="2" stroke="white" strokeWidth="2.2" fill="none"/>
             <line x1="11" y1="11" x2="4"  y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
             <line x1="25" y1="11" x2="32" y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
             <line x1="11" y1="25" x2="4"  y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
             <line x1="25" y1="25" x2="32" y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
           </svg>
-          <div style={{ display:"flex", alignItems:"center", gap:"8px", fontFamily:"'IBM Plex Mono', monospace" }}>
-            <div style={{ color:ACCENT, fontSize:"8px", letterSpacing:"0.28em" }}>● ONLINE</div>
-            <div style={{ color:"rgba(255,255,255,0.25)", fontSize:"8px", letterSpacing:"0.12em" }}>{clock}</div>
+          <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"14px", letterSpacing:"0.44em" }}>CORE X LAB</div>
+          <div style={{ display:"flex", alignItems:"center", gap:"8px", fontFamily:"'IBM Plex Mono', monospace", whiteSpace:"nowrap" }}>
+            <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.28em" }}>● ONLINE</div>
+            <div style={{ color:"rgba(255,255,255,0.25)", fontSize:"11px", letterSpacing:"0.12em" }}>{clock}</div>
           </div>
         </div>
       ) : (
@@ -384,13 +385,13 @@ export default function App() {
         </div>
       )}
 
-      {/* Top-left */}
-      <div style={{ position:"absolute", top: isMobile ? 18 : 28, left: isMobile ? 16 : 32, zIndex:10 }}>
-        <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize: isMobile ? "11px" : "18px", letterSpacing:"0.44em" }}>CORE X LAB</div>
-        {!isMobile && (
+      {/* Top-left (desktop only) */}
+      {!isMobile && (
+        <div style={{ position:"absolute", top:28, left:32, zIndex:10 }}>
+          <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"18px", letterSpacing:"0.44em" }}>CORE X LAB</div>
           <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize:"30px", letterSpacing:"0.24em", marginTop:"6px" }}>SYSTEM MAP</div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Top-right */}
       <div style={{ position:"absolute", top: isMobile ? 18 : 28, right: isMobile ? 16 : 32, zIndex:20, fontFamily:"'IBM Plex Mono', monospace", display:"flex", alignItems:"center", gap:"18px" }}>

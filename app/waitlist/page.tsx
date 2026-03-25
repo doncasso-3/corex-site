@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import CoreXFooter from "@/components/CoreXFooter";
+import DotGrid from "@/components/DotGrid";
 
 export default function WaitlistPage() {
   const [clock, setClock] = useState("");
@@ -48,6 +49,7 @@ export default function WaitlistPage() {
 
   return (
     <>
+      <DotGrid />
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
       <style>{`

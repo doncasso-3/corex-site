@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import CoreXFooter from "@/components/CoreXFooter";
+import DotGrid from "@/components/DotGrid";
 
 const LINES: { cls: string; delay: number; text: string }[] = [
   { cls: "line-opening",    delay: 800,   text: "Most people are not lost." },
@@ -118,6 +119,7 @@ export default function ManifestoPage() {
 
   return (
     <>
+      <DotGrid />
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link
         href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&display=swap"

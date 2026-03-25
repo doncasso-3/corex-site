@@ -1,5 +1,6 @@
 import Link from "next/link";
 import CoreXFooter from "@/components/CoreXFooter";
+import DotGrid from "@/components/DotGrid";
 
 const styles = {
   page: {
@@ -107,6 +108,7 @@ const Li = ({ children }: { children: React.ReactNode }) => (
 export default function PrivacyPolicy() {
   return (
     <>
+    <DotGrid />
     <div style={styles.page}>
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet" />

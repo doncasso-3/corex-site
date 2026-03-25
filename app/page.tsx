@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as THREE from "three";
+import DotGrid from "@/components/DotGrid";
 
 const NODE_ROUTES: Record<string, string> = {
   "command-os": "/waitlist",
@@ -45,7 +46,6 @@ type NodeType = typeof NODES[number];
 
 export default function App() {
   const mountRef  = useRef<HTMLDivElement>(null);
-  const dotCanvasRef = useRef<HTMLCanvasElement>(null);
   const router    = useRouter();
   const labelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const stateRef  = useRef<Record<string, unknown>>({});
@@ -63,62 +63,6 @@ export default function App() {
   };
 
   const navigate = (id: string) => navigateRef.current(id);
-
-  // Dot-grid background animation
-  useEffect(() => {
-    const canvas = dotCanvasRef.current!;
-    const ctx = canvas.getContext("2d")!;
-    const SPACING = 22;
-    let raf: number;
-
-    type Dot = { x: number; y: number; phase: number; speed: number; isBlue: boolean };
-    let dots: Dot[] = [];
-
-    const build = () => {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-      dots = [];
-      const cols = Math.ceil(canvas.width  / SPACING) + 1;
-      const rows = Math.ceil(canvas.height / SPACING) + 1;
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          dots.push({
-            x: c * SPACING,
-            y: r * SPACING,
-            phase: Math.random() * Math.PI * 2,
-            speed: 0.4 + Math.random() * 0.8,
-            isBlue: Math.random() < 0.06,
-          });
-        }
-      }
-    };
-
-    const draw = () => {
-      raf = requestAnimationFrame(draw);
-      const t = Date.now() * 0.001;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (const d of dots) {
-        const pulse = 0.5 + 0.5 * Math.sin(t * d.speed + d.phase);
-        const alpha = 0.06 + 0.18 * pulse;
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, 1, 0, Math.PI * 2);
-        ctx.fillStyle = d.isBlue
-          ? `rgba(0,102,255,${alpha})`
-          : `rgba(255,255,255,${alpha})`;
-        ctx.fill();
-      }
-    };
-
-    build();
-    draw();
-
-    const onResize = () => build();
-    window.addEventListener("resize", onResize);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", onResize);
-    };
-  }, []);
 
   useEffect(() => {
     const tickClock = () => {
@@ -289,8 +233,7 @@ export default function App() {
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
-      {/* Dot-grid background */}
-      <canvas ref={dotCanvasRef} style={{ position:"absolute", inset:0, zIndex:0, opacity:0.5, pointerEvents:"none" }} />
+      <DotGrid />
 
       <div ref={mountRef} style={{ position:"absolute", inset:0 }} />
 

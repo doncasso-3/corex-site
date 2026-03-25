@@ -251,7 +251,7 @@ export default function App() {
               whiteSpace:"nowrap", pointerEvents:"none", transition:"opacity 0.4s" }}>
             <div style={{
               color: n.primer ? ACCENT : "#ccc",
-              fontSize: "25px", letterSpacing: "0.22em", fontWeight: n.primer ? 700 : 400,
+              fontSize: "10px", letterSpacing: "0.22em", fontWeight: n.primer ? 700 : 400,
               textShadow: n.primer
                 ? "0 0 18px rgba(0,51,204,1), 0 0 40px rgba(0,51,204,0.4)"
                 : "0 0 10px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8)",
@@ -259,7 +259,7 @@ export default function App() {
             {n.primer && (
               <div style={{
                 color: "rgba(0,51,204,0.8)",
-                fontSize:"22px", letterSpacing:"0.18em", marginTop:"3px",
+                fontSize:"7px", letterSpacing:"0.18em", marginTop:"3px",
               }}>▸ ENTER</div>
             )}
           </div>
@@ -268,15 +268,15 @@ export default function App() {
 
       {/* Top-left */}
       <div style={{ position:"absolute", top:28, left:32, zIndex:10 }}>
-        <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"23px", letterSpacing:"0.44em" }}>CORE X LAB</div>
-        <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize:"37px", letterSpacing:"0.24em", marginTop:"6px" }}>SYSTEM MAP</div>
+        <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"18px", letterSpacing:"0.44em" }}>CORE X LAB</div>
+        <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize:"30px", letterSpacing:"0.24em", marginTop:"6px" }}>SYSTEM MAP</div>
       </div>
 
       {/* Top-right: online + clock + hamburger */}
       <div style={{ position:"absolute", top:28, right:32, zIndex:20, fontFamily:"'IBM Plex Mono', monospace", display:"flex", alignItems:"center", gap:"18px" }}>
         <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-          <div style={{ color:ACCENT, fontSize:"23px", letterSpacing:"0.3em" }}>● ONLINE</div>
-          <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"24px" }}>{clock}</div>
+          <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.3em" }}>● ONLINE</div>
+          <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"12px" }}>{clock}</div>
         </div>
         <button onClick={() => setMenuOpen(o => !o)} style={{
           background:"none", border:"none", outline:"none",
@@ -327,10 +327,10 @@ export default function App() {
                 boxShadow: n.primer ? `0 0 8px ${ACCENT}` : "none",
               }} />
               <div style={{ flex:1 }}>
-                <div style={{ color: n.primer ? ACCENT : "#fff", fontSize:"25px", letterSpacing:"0.18em" }}>{n.label}</div>
-                <div style={{ color:"rgba(255,255,255,0.25)", fontSize:"22px", letterSpacing:"0.12em", marginTop:"2px" }}>{n.sub}</div>
+                <div style={{ color: n.primer ? ACCENT : "#fff", fontSize:"15px", letterSpacing:"0.18em" }}>{n.label}</div>
+                <div style={{ color:"rgba(255,255,255,0.25)", fontSize:"10px", letterSpacing:"0.12em", marginTop:"2px" }}>{n.sub}</div>
               </div>
-              {n.primer && <div style={{ color:ACCENT, fontSize:"22px", letterSpacing:"0.18em" }}>START</div>}
+              {n.primer && <div style={{ color:ACCENT, fontSize:"10px", letterSpacing:"0.18em" }}>START</div>}
             </div>
           ))}
         </div>
@@ -341,18 +341,18 @@ export default function App() {
         <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize:"49px", letterSpacing:"0.1em", lineHeight:1.0 }}>
           OPERATE<br/>BY DESIGN.
         </div>
-        <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.2)", fontSize:"23px", letterSpacing:"0.4em", marginTop:"10px" }}>
+        <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.2)", fontSize:"19px", letterSpacing:"0.4em", marginTop:"10px" }}>
           REJECT DEFAULT
         </div>
       </div>
 
       {/* Bottom-right: primers */}
       <div style={{ position:"absolute", bottom:28, right:32, zIndex:10, textAlign:"right", fontFamily:"'IBM Plex Mono', monospace" }}>
-        <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"22px", letterSpacing:"0.34em", marginBottom:"10px" }}>START HERE</div>
+        <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"18px", letterSpacing:"0.34em", marginBottom:"10px" }}>START HERE</div>
         <div style={{ display:"flex", gap:"8px", justifyContent:"flex-end" }}>
           {NODES.filter(n => n.primer).map(n => (
             <div key={n.id} onClick={() => navigate(n.id)} style={{
-              color:ACCENT, fontSize:"23px", letterSpacing:"0.2em",
+              color:ACCENT, fontSize:"19px", letterSpacing:"0.2em",
               border:"1px solid rgba(0,51,204,0.45)", padding:"6px 14px",
               boxShadow:"0 0 18px rgba(0,51,204,0.14)", cursor:"pointer",
             }}>{n.label}</div>
@@ -372,9 +372,9 @@ export default function App() {
           boxShadow: hovered.primer ? "0 0 40px rgba(0,51,204,0.2)" : "none",
           minWidth:"190px",
         }}>
-          <div style={{ color: hovered.primer ? ACCENT : "#fff", fontSize:"25px", letterSpacing:"0.22em", fontWeight:700 }}>{hovered.label}</div>
-          <div style={{ color:"rgba(255,255,255,0.3)", fontSize:"22.5px", letterSpacing:"0.16em", marginTop:"5px" }}>{hovered.sub}</div>
-          {hovered.primer && <div style={{ color:ACCENT, fontSize:"22px", letterSpacing:"0.22em", marginTop:"12px" }}>▸ RECOMMENDED ENTRY POINT</div>}
+          <div style={{ color: hovered.primer ? ACCENT : "#fff", fontSize:"10px", letterSpacing:"0.22em", fontWeight:700 }}>{hovered.label}</div>
+          <div style={{ color:"rgba(255,255,255,0.3)", fontSize:"7.5px", letterSpacing:"0.16em", marginTop:"5px" }}>{hovered.sub}</div>
+          {hovered.primer && <div style={{ color:ACCENT, fontSize:"7px", letterSpacing:"0.22em", marginTop:"12px" }}>▸ RECOMMENDED ENTRY POINT</div>}
         </div>
       )}
 

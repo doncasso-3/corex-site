@@ -154,7 +154,9 @@ export default function App() {
     let autoSpin    = true;
     let spinOffset  = 0;       // offset so resume continues smoothly from manual position
     let manualRotY  = 0;       // current rotation.y during manual control
+    let manualRotX  = 0.22;   // current rotation.x during manual control
     let lastTouchX  = 0;
+    let lastTouchY  = 0;
     let idleTimer: ReturnType<typeof setTimeout> | null = null;
     let touchStart  = { x: 0, y: 0, time: 0 };
 
@@ -191,9 +193,11 @@ export default function App() {
       const touch = e.touches[0];
       touchStart = { x: touch.clientX, y: touch.clientY, time: Date.now() };
       lastTouchX = touch.clientX;
+      lastTouchY = touch.clientY;
       // Freeze auto-spin, capture current rotation
       if (autoSpin) {
         manualRotY = group.rotation.y;
+        manualRotX = group.rotation.x;
         autoSpin = false;
       }
       if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
@@ -203,9 +207,12 @@ export default function App() {
       if (e.touches.length !== 1) return;
       e.preventDefault();
       const touch = e.touches[0];
-      const delta = (touch.clientX - lastTouchX) * 0.009;
-      manualRotY += delta;
+      manualRotY += (touch.clientX - lastTouchX) * 0.009;
+      manualRotX += (touch.clientY - lastTouchY) * 0.009;
+      // Clamp X so the sphere doesn't flip upside-down
+      manualRotX = Math.max(-1.2, Math.min(1.6, manualRotX));
       lastTouchX = touch.clientX;
+      lastTouchY = touch.clientY;
     };
 
     const onTouchEnd = (e: TouchEvent) => {
@@ -249,10 +256,13 @@ export default function App() {
       raf = requestAnimationFrame(animate);
       const t = Date.now() * 0.001;
       const rotY = autoSpin ? t * 0.12 + spinOffset : manualRotY;
+      // On auto-spin, lerp X back to resting tilt (0.22); on manual, use drag value
+      const targetX = autoSpin ? 0.22 : manualRotX;
+      group.rotation.x += (targetX - group.rotation.x) * (autoSpin ? 0.04 : 1);
+      if (autoSpin) manualRotX = group.rotation.x; // keep manualRotX in sync
       group.rotation.y    = rotY;
-      group.rotation.x    = 0.22;
       wfSphere.rotation.y = rotY;
-      wfSphere.rotation.x = 0.22;
+      wfSphere.rotation.x = group.rotation.x;
 
       haloMeshes.forEach(h => {
         const pulse = 0.5 + 0.5 * Math.sin(t * 2.4 + h.userData.phase);

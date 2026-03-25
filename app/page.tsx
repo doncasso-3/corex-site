@@ -354,8 +354,11 @@ export default function App() {
         ))}
       </div>
 
-      {/* Top-center logo */}
-      <div style={{ position:"absolute", top:28, left:"50%", transform:"translateX(-50%)", zIndex:10 }}>
+      {/* Top-center: logo + online + clock */}
+      <div style={{
+        position:"absolute", top: isMobile ? 24 : 36, left:"50%", transform:"translateX(-50%)",
+        zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", gap:"8px",
+      }}>
         <svg width={isMobile ? 18 : 22} height={isMobile ? 18 : 22} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="11" y="11" width="14" height="14" rx="2" stroke="white" strokeWidth="2.2" fill="none"/>
           <line x1="11" y1="11" x2="4"  y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
@@ -363,20 +366,19 @@ export default function App() {
           <line x1="11" y1="25" x2="4"  y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
           <line x1="25" y1="25" x2="32" y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
         </svg>
-      </div>
-
-      {/* Top-left */}
-      <div style={{ position:"absolute", top: isMobile ? 18 : 28, left: isMobile ? 16 : 32, zIndex:10 }}>
-        <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize: isMobile ? "11px" : "18px", letterSpacing:"0.44em" }}>CORE X LAB</div>
-        <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize: isMobile ? "18px" : "30px", letterSpacing:"0.24em", marginTop:"6px" }}>SYSTEM MAP</div>
-      </div>
-
-      {/* Top-right: online + clock + hamburger */}
-      <div style={{ position:"absolute", top: isMobile ? 18 : 28, right: isMobile ? 16 : 32, zIndex:20, fontFamily:"'IBM Plex Mono', monospace", display:"flex", alignItems:"center", gap:"18px" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-          <div style={{ color:ACCENT, fontSize: isMobile ? "9px" : "11px", letterSpacing:"0.3em" }}>● ONLINE</div>
-          {!isMobile && <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"12px" }}>{clock}</div>}
+        <div style={{ display:"flex", alignItems:"center", gap:"8px", fontFamily:"'IBM Plex Mono', monospace" }}>
+          <div style={{ color:ACCENT, fontSize: isMobile ? "8px" : "10px", letterSpacing:"0.28em" }}>● ONLINE</div>
+          <div style={{ color:"rgba(255,255,255,0.25)", fontSize: isMobile ? "8px" : "10px", letterSpacing:"0.12em" }}>{clock}</div>
         </div>
+      </div>
+
+      {/* Top-left: CORE X LAB only */}
+      <div style={{ position:"absolute", top: isMobile ? 24 : 36, left: isMobile ? 16 : 32, zIndex:10 }}>
+        <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize: isMobile ? "11px" : "18px", letterSpacing:"0.44em" }}>CORE X LAB</div>
+      </div>
+
+      {/* Top-right: hamburger only */}
+      <div style={{ position:"absolute", top: isMobile ? 24 : 36, right: isMobile ? 16 : 32, zIndex:20 }}>
         <button onClick={() => setMenuOpen(o => !o)} style={{
           background:"none", border:"none", outline:"none",
           cursor:"pointer", padding:"4px 0",
@@ -435,28 +437,42 @@ export default function App() {
         </div>
       </div>
 
-      {/* Bottom-left */}
-      <div style={{ position:"absolute", bottom: isMobile ? 16 : 28, left: isMobile ? 16 : 32, zIndex:10 }}>
-        <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize: isMobile ? "28px" : "49px", letterSpacing:"0.1em", lineHeight:1.0 }}>
-          OPERATE<br/>BY DESIGN.
+      {/* Bottom-center: tagline + buttons */}
+      <div style={{
+        position:"absolute", bottom: isMobile ? 20 : 32,
+        left:"50%", transform:"translateX(-50%)",
+        zIndex:10, textAlign:"center",
+        fontFamily:"'IBM Plex Mono', monospace",
+        whiteSpace:"nowrap",
+      }}>
+        <div style={{
+          fontFamily:"'Bebas Neue', sans-serif", color:"#fff",
+          fontSize: isMobile ? "clamp(28px,9vw,48px)" : "clamp(40px,5vw,68px)",
+          letterSpacing:"0.1em", lineHeight:1.0,
+        }}>
+          OPERATE BY DESIGN.
         </div>
-        <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.2)", fontSize: isMobile ? "10px" : "19px", letterSpacing:"0.4em", marginTop:"10px" }}>
+        <div style={{
+          color:"rgba(255,255,255,0.2)",
+          fontSize: isMobile ? "10px" : "14px",
+          letterSpacing:"0.4em", marginTop:"10px",
+        }}>
           REJECT DEFAULT
         </div>
-      </div>
-
-      {/* Bottom-right: primers */}
-      <div style={{ position:"absolute", bottom: isMobile ? 16 : 28, right: isMobile ? 16 : 32, zIndex:10, textAlign:"right", fontFamily:"'IBM Plex Mono', monospace" }}>
-        <div style={{ color:"rgba(255,255,255,0.18)", fontSize: isMobile ? "10px" : "18px", letterSpacing:"0.34em", marginBottom:"10px" }}>START HERE</div>
-        <div style={{ display:"flex", gap:"8px", justifyContent:"flex-end" }}>
+        <div style={{ display:"flex", gap:"10px", justifyContent:"center", marginTop:"16px" }}>
           {NODES.filter(n => n.primer).map(n => (
             <div key={n.id} onClick={() => navigate(n.id)} style={{
-              color:ACCENT, fontSize: isMobile ? "11px" : "19px", letterSpacing:"0.2em",
-              border:"1px solid rgba(0,51,204,0.45)", padding: isMobile ? "5px 10px" : "6px 14px",
+              color:ACCENT, fontSize: isMobile ? "11px" : "16px", letterSpacing:"0.2em",
+              border:"1px solid rgba(0,51,204,0.45)", padding: isMobile ? "6px 14px" : "7px 18px",
               boxShadow:"0 0 18px rgba(0,51,204,0.14)", cursor:"pointer",
             }}>{n.label}</div>
           ))}
         </div>
+        <div style={{
+          color:"rgba(255,255,255,0.18)",
+          fontSize: isMobile ? "9px" : "12px",
+          letterSpacing:"0.34em", marginTop:"10px",
+        }}>START HERE</div>
       </div>
 
       {/* Hover tooltip */}

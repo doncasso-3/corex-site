@@ -81,10 +81,10 @@ export default function App() {
     const camera = new THREE.PerspectiveCamera(42, W/H, 0.1, 100);
     camera.position.z = 8;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(W, H);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x000000, 1);
+    renderer.setClearColor(0x000000, 0);
     el.appendChild(renderer.domElement);
 
     const wfSphere = new THREE.Mesh(

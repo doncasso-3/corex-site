@@ -136,7 +136,7 @@ export default function ManifestoPage() {
           --text: #cccccc;
         }
         .mf-body {
-          background: var(--black);
+          background: transparent;
           color: var(--white);
           font-family: 'IBM Plex Mono', monospace;
           min-height: 100vh;

@@ -368,10 +368,6 @@ export default function App() {
             <line x1="25" y1="25" x2="32" y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
           </svg>
           <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"14px", letterSpacing:"0.44em" }}>CORE X LAB</div>
-          <div style={{ display:"flex", alignItems:"center", gap:"8px", fontFamily:"'IBM Plex Mono', monospace", whiteSpace:"nowrap" }}>
-            <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.28em" }}>● ONLINE</div>
-            <div style={{ color:"rgba(255,255,255,0.25)", fontSize:"11px", letterSpacing:"0.12em" }}>{clock}</div>
-          </div>
         </div>
       ) : (
         <div style={{ position:"absolute", top:28, left:"50%", transform:"translateX(-50%)", zIndex:10 }}>
@@ -385,8 +381,12 @@ export default function App() {
         </div>
       )}
 
-      {/* Top-left (desktop only) */}
-      {!isMobile && (
+      {/* Top-left: ONLINE on mobile, CORE X LAB + SYSTEM MAP on desktop */}
+      {isMobile ? (
+        <div style={{ position:"absolute", top:18, left:16, zIndex:10, fontFamily:"'IBM Plex Mono', monospace" }}>
+          <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.28em" }}>● ONLINE</div>
+        </div>
+      ) : (
         <div style={{ position:"absolute", top:28, left:32, zIndex:10 }}>
           <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"18px", letterSpacing:"0.44em" }}>CORE X LAB</div>
           <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize:"30px", letterSpacing:"0.24em", marginTop:"6px" }}>SYSTEM MAP</div>

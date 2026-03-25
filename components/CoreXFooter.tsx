@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 const Logo = () => (
-  <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="46" height="46" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect x="11" y="11" width="14" height="14" rx="2" stroke="white" strokeWidth="2.2" fill="none"/>
     <line x1="11" y1="11" x2="4"  y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
     <line x1="25" y1="11" x2="32" y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
@@ -37,7 +37,7 @@ const legalLinks = [
 const linkStyle: React.CSSProperties = {
   fontFamily: "'IBM Plex Mono', monospace",
   color: "rgba(255,255,255,0.38)",
-  fontSize: "10px",
+  fontSize: "15px",
   letterSpacing: "0.18em",
   textDecoration: "none",
   display: "block",
@@ -49,7 +49,7 @@ const linkStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   fontFamily: "'IBM Plex Mono', monospace",
   color: "rgba(255,255,255,0.18)",
-  fontSize: "7px",
+  fontSize: "12px",
   letterSpacing: "0.48em",
   marginBottom: "16px",
 };
@@ -63,7 +63,7 @@ export default function CoreXFooter() {
       fontFamily: "'IBM Plex Mono', monospace",
     }}>
       {/* Main row */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "48px" }}>
+      <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start", gap: "72px" }}>
 
         {/* Left — logo + name + tagline */}
         <div style={{ flexShrink: 0 }}>
@@ -71,7 +71,7 @@ export default function CoreXFooter() {
           <div style={{
             fontFamily: "'Bebas Neue', sans-serif",
             color: "#fff",
-            fontSize: "18px",
+            fontSize: "23px",
             letterSpacing: "0.28em",
             marginTop: "14px",
           }}>
@@ -80,7 +80,7 @@ export default function CoreXFooter() {
           <div style={{
             fontFamily: "'IBM Plex Mono', monospace",
             color: "rgba(255,255,255,0.28)",
-            fontSize: "8px",
+            fontSize: "11px",
             letterSpacing: "0.3em",
             marginTop: "6px",
           }}>
@@ -152,7 +152,7 @@ export default function CoreXFooter() {
         textAlign: "center",
         fontFamily: "'IBM Plex Mono', monospace",
         color: "rgba(255,255,255,0.15)",
-        fontSize: "8px",
+        fontSize: "13px",
         letterSpacing: "0.28em",
       }}>
         © 2026 CORE X LAB — ALL RIGHTS RESERVED &nbsp;·&nbsp; V0.1 LAB RELEASE

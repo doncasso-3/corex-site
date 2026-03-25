@@ -269,6 +269,17 @@ export default function App() {
         ))}
       </div>
 
+      {/* Top-center logo */}
+      <div style={{ position:"absolute", top:28, left:"50%", transform:"translateX(-50%)", zIndex:10 }}>
+        <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="11" y="11" width="14" height="14" rx="2" stroke="white" strokeWidth="2.2" fill="none"/>
+          <line x1="11" y1="11" x2="4"  y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+          <line x1="25" y1="11" x2="32" y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+          <line x1="11" y1="25" x2="4"  y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+          <line x1="25" y1="25" x2="32" y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+        </svg>
+      </div>
+
       {/* Top-left */}
       <div style={{ position:"absolute", top:28, left:32, zIndex:10 }}>
         <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"18px", letterSpacing:"0.44em" }}>CORE X LAB</div>

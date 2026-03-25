@@ -358,7 +358,7 @@ export default function App() {
       {isMobile ? (
         <div style={{
           position:"absolute", top:24, left:"50%", transform:"translateX(-50%)",
-          zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", gap:"6px",
+          zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", gap:"0px",
         }}>
           <svg width={24} height={24} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="11" y="11" width="14" height="14" rx="2" stroke="white" strokeWidth="2.2" fill="none"/>
@@ -367,7 +367,8 @@ export default function App() {
             <line x1="11" y1="25" x2="4"  y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
             <line x1="25" y1="25" x2="32" y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
           </svg>
-          <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"14px", letterSpacing:"0.44em" }}>CORE X LAB</div>
+          <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"14px", letterSpacing:"0.12em", marginTop:"9px" }}>CORE X LAB</div>
+          <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.25)", fontSize:"11px", letterSpacing:"0.12em", marginTop:"7px" }}>{clock}</div>
         </div>
       ) : (
         <div style={{ position:"absolute", top:28, left:"50%", transform:"translateX(-50%)", zIndex:10 }}>

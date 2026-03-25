@@ -302,9 +302,9 @@ export default function App() {
       <div style={{
         position:"absolute", top:0, right:0, zIndex:15,
         width:"260px",
-        background:"rgba(0,0,0,0.97)",
-        borderLeft:"1px solid rgba(255,255,255,0.07)",
-        borderBottom:"1px solid rgba(255,255,255,0.07)",
+        background:"rgba(0,0,0,0.55)",
+        backdropFilter:"blur(24px) saturate(160%)",
+        WebkitBackdropFilter:"blur(24px) saturate(160%)",
         maxHeight: menuOpen ? "100vh" : "0",
         overflow:"hidden",
         transition:"max-height 0.45s cubic-bezier(0.16,1,0.3,1)",
@@ -314,7 +314,7 @@ export default function App() {
             <div key={n.id} onClick={() => navigate(n.id)} style={{
               display:"flex", alignItems:"center", gap:"14px",
               padding:"11px 0",
-              borderBottom: i < NODES.length-1 ? "1px solid rgba(255,255,255,0.05)" : "none",
+              borderBottom:"none",
               cursor:"pointer", fontFamily:"'IBM Plex Mono', monospace",
               transition:"padding-left 0.15s",
             }}

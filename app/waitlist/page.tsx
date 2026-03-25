@@ -404,10 +404,19 @@ export default function WaitlistPage() {
         }
 
         /* Mobile */
-        @media (max-width: 640px) {
-          .wl-main { padding: 100px 28px 80px; }
-          .chrome-top { padding: 18px 28px; }
+        @media (max-width: 768px) {
+          .wl-main { padding: 90px 20px 60px; max-width: 100%; }
+          .chrome-top { padding: 16px 20px; }
+          .chrome-right { margin-right: 0; font-size: 9px; gap: 10px; }
+          .chrome-right span:last-child { display: none; }
           .rail-right { display: none; }
+          .season-row { flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+          .copy-block { max-width: 100%; margin-bottom: 32px; }
+          .form-wrap { max-width: 100%; }
+          .title-line1, .title-line2 { font-size: clamp(48px, 16vw, 90px); }
+          .input-row { flex-direction: column; }
+          .email-input { padding: 14px 16px; }
+          .transmit-btn { border-left: none; border-top: 1px solid var(--mid); padding: 14px; text-align: center; }
         }
       `}</style>
 

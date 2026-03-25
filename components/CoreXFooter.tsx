@@ -62,13 +62,23 @@ export default function CoreXFooter() {
       padding: "52px 48px 32px",
       fontFamily: "'IBM Plex Mono', monospace",
     }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .footer-inner { flex-direction: column !important; gap: 40px !important; }
+          .footer-cols { flex-wrap: wrap !important; gap: 32px !important; }
+          .footer-logo-text { font-size: 36px !important; }
+          .footer-tagline { font-size: 10px !important; }
+          footer { padding: 40px 24px 24px !important; }
+          .footer-bottom { font-size: 7px !important; }
+        }
+      `}</style>
       {/* Main row */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "48px" }}>
+      <div className="footer-inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "48px" }}>
 
         {/* Left — logo + name + tagline */}
-        <div style={{ flexShrink: 0 }}>
+        <div className="footer-brand" style={{ flexShrink: 0 }}>
           <Logo />
-          <div style={{
+          <div className="footer-logo-text" style={{
             fontFamily: "'Bebas Neue', sans-serif",
             color: "#fff",
             fontSize: "52px",
@@ -77,7 +87,7 @@ export default function CoreXFooter() {
           }}>
             CORE X
           </div>
-          <div style={{
+          <div className="footer-tagline" style={{
             fontFamily: "'IBM Plex Mono', monospace",
             color: "rgba(255,255,255,0.28)",
             fontSize: "13px",
@@ -89,7 +99,7 @@ export default function CoreXFooter() {
         </div>
 
         {/* Right — three link columns */}
-        <div style={{ display: "flex", gap: "56px" }}>
+        <div className="footer-cols" style={{ display: "flex", gap: "56px" }}>
 
           {/* Navigate */}
           <div>
@@ -145,7 +155,7 @@ export default function CoreXFooter() {
       </div>
 
       {/* Bottom — copyright + version */}
-      <div style={{
+      <div className="footer-bottom" style={{
         marginTop: "48px",
         paddingTop: "20px",
         borderTop: "1px solid rgba(255,255,255,0.05)",

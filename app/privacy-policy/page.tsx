@@ -112,12 +112,18 @@ export default function PrivacyPolicy() {
     <div style={styles.page}>
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet" />
-      <div style={styles.inner}>
+      <style>{`
+        @media (max-width: 768px) {
+          .pp-inner { padding: 0 20px !important; }
+          .pp-title { font-size: 32px !important; }
+        }
+      `}</style>
+      <div className="pp-inner" style={styles.inner}>
 
         <Link href="/" style={styles.back}>← BACK</Link>
 
         <div style={styles.eyebrow}>CORE X LAB — LEGAL</div>
-        <div style={styles.title}>PRIVACY<br />POLICY</div>
+        <div className="pp-title" style={styles.title}>PRIVACY<br />POLICY</div>
         <div style={styles.updated}>LAST UPDATED: MARCH 2026</div>
 
         <Section title="01 — WHO WE ARE">

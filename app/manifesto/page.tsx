@@ -277,6 +277,15 @@ export default function ManifestoPage() {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
+        @media (max-width: 768px) {
+          .content { padding: 80px 24px 100px; }
+          .access-tag { font-size: 9px; left: 20px; top: 22px; }
+          .doc-id { display: none; }
+          .line-body { font-size: 13px; }
+          .line-reject { font-size: 13px; }
+          .line-label { font-size: 9px; }
+          .line-spacer-lg { height: 40px; }
+        }
       `}</style>
 
       <div className="mf-body" onClick={skipAll}>

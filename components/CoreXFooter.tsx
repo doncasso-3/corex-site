@@ -63,7 +63,7 @@ export default function CoreXFooter() {
       fontFamily: "'IBM Plex Mono', monospace",
     }}>
       {/* Main row */}
-      <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start", gap: "72px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "48px" }}>
 
         {/* Left — logo + name + tagline */}
         <div style={{ flexShrink: 0 }}>

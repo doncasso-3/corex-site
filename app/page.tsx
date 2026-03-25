@@ -84,7 +84,7 @@ export default function App() {
 
     const scene  = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(42, W/H, 0.1, 100);
-    camera.position.z = 8;
+    camera.position.z = window.innerWidth < 768 ? 13 : 8;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(W, H);
@@ -286,6 +286,7 @@ export default function App() {
     const onResize = () => {
       W = el.clientWidth; H = el.clientHeight;
       camera.aspect = W / H;
+      camera.position.z = window.innerWidth < 768 ? 13 : 8;
       camera.updateProjectionMatrix();
       renderer.setSize(W, H);
     };

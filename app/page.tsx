@@ -150,6 +150,14 @@ export default function App() {
 
     stateRef.current = { group, wfSphere, positions, haloMeshes };
 
+    // Touch spin state
+    let autoSpin    = true;
+    let spinOffset  = 0;       // offset so resume continues smoothly from manual position
+    let manualRotY  = 0;       // current rotation.y during manual control
+    let lastTouchX  = 0;
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+    let touchStart  = { x: 0, y: 0, time: 0 };
+
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     let hovIdx = -1;
@@ -178,13 +186,69 @@ export default function App() {
     };
     el.addEventListener("click", onCanvasClick);
 
+    // ── Touch handlers ──────────────────────────────────────────
+    const onTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      touchStart = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+      lastTouchX = touch.clientX;
+      // Freeze auto-spin, capture current rotation
+      if (autoSpin) {
+        manualRotY = group.rotation.y;
+        autoSpin = false;
+      }
+      if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const delta = (touch.clientX - lastTouchX) * 0.009;
+      manualRotY += delta;
+      lastTouchX = touch.clientX;
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStart.x;
+      const dy = touch.clientY - touchStart.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const elapsed = Date.now() - touchStart.time;
+
+      // Short tap → treat as node click
+      if (elapsed < 300 && dist < 12) {
+        const rect = el.getBoundingClientRect();
+        mouse.x =  ((touch.clientX - rect.left) / W) * 2 - 1;
+        mouse.y = -((touch.clientY - rect.top)  / H) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const hits = raycaster.intersectObjects(hitMeshes);
+        if (hits.length > 0) {
+          navigateRef.current(NODES[hits[0].object.userData.index].id);
+          return;
+        }
+      }
+
+      // Start 5-second idle timer then resume auto-spin
+      idleTimer = setTimeout(() => {
+        const now = Date.now() * 0.001;
+        spinOffset = manualRotY - now * 0.12; // resume seamlessly from current angle
+        autoSpin = true;
+        idleTimer = null;
+      }, 5000);
+    };
+
+    el.addEventListener("touchstart",  onTouchStart, { passive: true });
+    el.addEventListener("touchmove",   onTouchMove,  { passive: false });
+    el.addEventListener("touchend",    onTouchEnd);
+    // ────────────────────────────────────────────────────────────
+
     setTimeout(() => setLoaded(true), 400);
 
     let raf: number;
     const animate = () => {
       raf = requestAnimationFrame(animate);
       const t = Date.now() * 0.001;
-      const rotY = t * 0.12;
+      const rotY = autoSpin ? t * 0.12 + spinOffset : manualRotY;
       group.rotation.y    = rotY;
       group.rotation.x    = 0.22;
       wfSphere.rotation.y = rotY;
@@ -220,8 +284,12 @@ export default function App() {
     return () => {
       clearInterval(clockId);
       cancelAnimationFrame(raf);
-      el.removeEventListener("mousemove", onMouseMove);
-      el.removeEventListener("click", onCanvasClick);
+      if (idleTimer) clearTimeout(idleTimer);
+      el.removeEventListener("mousemove",  onMouseMove);
+      el.removeEventListener("click",      onCanvasClick);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove",  onTouchMove);
+      el.removeEventListener("touchend",   onTouchEnd);
       window.removeEventListener("resize", onResize);
       window.removeEventListener('resize', checkMobile);
       renderer.dispose();

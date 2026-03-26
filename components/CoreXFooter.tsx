@@ -19,7 +19,7 @@ const navLinks = [
   { label: "Command OS",  href: "/waitlist" },
   { label: "Manifesto",   href: "/manifesto" },
   { label: "Signal",      href: "#" },
-  { label: "C-Max",       href: "#" },
+  { label: "C-Max",       href: "/diagnostic" },
   { label: "Lab Status",  href: "#" },
 ];
 

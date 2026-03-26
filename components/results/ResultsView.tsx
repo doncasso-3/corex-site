@@ -53,7 +53,14 @@ export default function ResultsView() {
     setTimeout(() => setShowCTA(true), 600 + domains * 100 + 800)
   }, [unlocked])
 
-  if (!result) return null
+  // Shouldn't happen — context sets result before phase transitions — but guard defensively
+  if (!result) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: '11px', color: '#3D3D3D', letterSpacing: '0.2em' }}>
+        LOADING...
+      </span>
+    </div>
+  )
 
   const { classification, weakest } = result
 

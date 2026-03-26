@@ -73,8 +73,6 @@ export default function ProcessingScreen() {
     setTimeout(() => completeProcessing(), lastLine + 400 + 900)
   }, [completeProcessing])
 
-  if (!result) return null
-
   return (
     <div style={{
       position: 'relative', zIndex: 2,
@@ -83,8 +81,8 @@ export default function ProcessingScreen() {
       alignItems: 'center', justifyContent: 'center',
       gap: '48px', padding: '40px 24px',
     }}>
-      {/* Radar */}
-      <ProcessingRadar scores={result.scores} />
+      {/* Radar — only when result is ready */}
+      {result && <ProcessingRadar scores={result.scores} />}
 
       {/* Log lines */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '320px' }}>

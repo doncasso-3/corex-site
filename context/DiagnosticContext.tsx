@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from 'react'
 import type { Domain, DiagnosticResult, DiagnosticPhase } from '@/types/diagnostic'
 import { QUESTIONS } from '@/lib/diagnostic/questions'
 import { calculateResults } from '@/lib/diagnostic/scoring'
@@ -34,57 +34,70 @@ export function DiagnosticProvider({ children }: { children: ReactNode }) {
   const [result, setResult]                     = useState<DiagnosticResult | null>(null)
   const [completedDomains, setCompletedDomains] = useState<Domain[]>([])
 
+  // Refs hold the latest values so callbacks never go stale
+  const answersRef      = useRef<Record<string, number>>({})
+  const currentIndexRef = useRef(0)
+  const resultRef       = useRef<DiagnosticResult | null>(null)
+
   const startDiagnostic = useCallback(() => {
+    answersRef.current      = {}
+    currentIndexRef.current = 0
     setPhase('question')
     setCurrentIndex(0)
+    setAnswers({})
     setActiveDomain(QUESTIONS[0].domain)
   }, [])
 
+  // Empty deps — reads from refs so it never captures stale state
   const answerQuestion = useCallback((questionId: string, value: number) => {
-    const newAnswers = { ...answers, [questionId]: value }
+    const newAnswers = { ...answersRef.current, [questionId]: value }
+    answersRef.current = newAnswers
     setAnswers(newAnswers)
 
-    const nextIndex = currentIndex + 1
+    const idx       = currentIndexRef.current
+    const nextIndex = idx + 1
 
     if (nextIndex >= QUESTIONS.length) {
-      // All done — go to processing
+      // All done — compute result and go to processing
       const res = calculateResults(newAnswers)
+      resultRef.current = res
       setResult(res)
       setPhase('processing')
       return
     }
 
-    const currentDomain = QUESTIONS[currentIndex].domain
+    const currentDomain = QUESTIONS[idx].domain
     const nextDomain    = QUESTIONS[nextIndex].domain
 
     if (nextDomain !== currentDomain) {
-      // Domain boundary — mark current domain complete
       setCompletedDomains(prev => [...prev, currentDomain])
     }
 
+    currentIndexRef.current = nextIndex
     setCurrentIndex(nextIndex)
     setActiveDomain(nextDomain)
-  }, [answers, currentIndex])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const completeProcessing = useCallback(() => {
     setPhase('results-gated')
   }, [])
 
   const submitEmail = useCallback(async (email: string): Promise<boolean> => {
-    if (!result) return false
+    const res = resultRef.current
+    if (!res) return false
     try {
-      const res = await fetch('/api/cmax-submit', {
+      const response = await fetch('/api/cmax-submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          scores: result.scores,
-          cmax: result.cmax,
-          weakest: result.weakest,
+          scores: res.scores,
+          cmax:   res.cmax,
+          weakest: res.weakest,
           source: sessionStorage.getItem('cmax_source') ?? 'direct',
         }),
       })
-      if (res.ok) {
+      if (response.ok) {
         setPhase('results-unlocked')
         return true
       }
@@ -92,9 +105,12 @@ export function DiagnosticProvider({ children }: { children: ReactNode }) {
     } catch {
       return false
     }
-  }, [result])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const reset = useCallback(() => {
+    answersRef.current      = {}
+    currentIndexRef.current = 0
+    resultRef.current       = null
     setPhase('hook')
     setCurrentIndex(0)
     setAnswers({})

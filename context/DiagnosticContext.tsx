@@ -17,6 +17,7 @@ interface DiagnosticState {
 interface DiagnosticActions {
   startDiagnostic: () => void
   answerQuestion: (questionId: string, value: number) => void
+  completeProcessing: () => void
   submitEmail: (email: string) => Promise<boolean>
   reset: () => void
 }
@@ -65,6 +66,10 @@ export function DiagnosticProvider({ children }: { children: ReactNode }) {
     setActiveDomain(nextDomain)
   }, [answers, currentIndex])
 
+  const completeProcessing = useCallback(() => {
+    setPhase('results-gated')
+  }, [])
+
   const submitEmail = useCallback(async (email: string): Promise<boolean> => {
     if (!result) return false
     try {
@@ -101,7 +106,7 @@ export function DiagnosticProvider({ children }: { children: ReactNode }) {
   return (
     <DiagnosticContext.Provider value={{
       phase, currentIndex, answers, activeDomain, result, completedDomains,
-      startDiagnostic, answerQuestion, submitEmail, reset,
+      startDiagnostic, answerQuestion, completeProcessing, submitEmail, reset,
     }}>
       {children}
     </DiagnosticContext.Provider>

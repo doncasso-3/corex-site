@@ -8,6 +8,7 @@ import DotGrid from "@/components/DotGrid";
 const NODE_ROUTES: Record<string, string> = {
   "command-os": "/waitlist",
   "manifesto":  "/manifesto",
+  "c-max":      "/diagnostic",
 };
 
 const ACCENT = "#0033CC";
@@ -20,7 +21,7 @@ const NODES = [
   { id: "command-os",  label: "COMMAND OS",  sub: "The Install", phi: 1.00, theta: 3.70, primer: true  },
   { id: "manifesto",   label: "MANIFESTO",   sub: "Doctrine",    phi: 0.90, theta: 5.80, primer: true  },
   { id: "signal",      label: "SIGNAL",      sub: "Media",       phi: 2.60, theta: 4.60, primer: false },
-  { id: "c-max",       label: "C-MAX",       sub: "Diagnostics", phi: 1.55, theta: 5.40, primer: false },
+  { id: "c-max",       label: "C-MAX",       sub: "Diagnostics", phi: 1.55, theta: 5.40, primer: true  },
   { id: "lab-status",  label: "LAB STATUS",  sub: "Roadmap",     phi: 1.30, theta: 2.85, primer: false },
 ];
 

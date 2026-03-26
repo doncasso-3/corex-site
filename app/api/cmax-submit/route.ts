@@ -57,9 +57,12 @@ export async function POST(req: NextRequest) {
         }),
       })
 
+      const kitBody = await kitRes.json().catch(() => null)
+      console.log('[cmax-submit] Kit status:', kitRes.status, JSON.stringify(kitBody))
+
       if (kitRes.ok) {
         // Add to form/sequence
-        await fetch(`https://api.kit.com/v4/forms/${process.env.KIT_FORM_ID}/subscribers`, {
+        const formRes = await fetch(`https://api.kit.com/v4/forms/${process.env.KIT_FORM_ID}/subscribers`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -67,6 +70,8 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({ email_address: email }),
         })
+        const formBody = await formRes.json().catch(() => null)
+        console.log('[cmax-submit] Kit form status:', formRes.status, JSON.stringify(formBody))
       }
     } catch (kitErr) {
       console.error('[cmax-submit] Kit error:', kitErr)

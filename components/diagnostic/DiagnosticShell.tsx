@@ -11,6 +11,8 @@ import ProgressLine       from './ProgressLine'
 import LiveRadarMini      from './LiveRadarMini'
 import QuestionCard       from './QuestionCard'
 import DomainTransition   from './DomainTransition'
+import ProcessingScreen   from './ProcessingScreen'
+import ResultsView        from '@/components/results/ResultsView'
 
 export default function DiagnosticShell() {
   const { phase, activeDomain, currentIndex } = useDiagnostic()
@@ -113,7 +115,13 @@ export default function DiagnosticShell() {
         </>
       )}
 
-      {/* ── PROCESSING + RESULTS: Session 4 ─── */}
+      {/* ── PROCESSING ───────────────────────── */}
+      {phase === 'processing' && <ProcessingScreen />}
+
+      {/* ── RESULTS ──────────────────────────── */}
+      {(phase === 'results-gated' || phase === 'results-unlocked') && (
+        <ResultsView />
+      )}
     </div>
   )
 }

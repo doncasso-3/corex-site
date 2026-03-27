@@ -56,6 +56,7 @@ export default function App() {
   const [menuOpen,     setMenuOpen]     = useState(false);
   const [transitioning, setTransitioning] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [hoveredMobilePrimer, setHoveredMobilePrimer] = useState<string | null>(null);
 
   // Kept in a ref so the useEffect canvas-click closure always sees the latest version
   const navigateRef = useRef<(id: string) => void>(() => {});
@@ -476,14 +477,29 @@ export default function App() {
           <div style={{ color:"rgba(255,255,255,0.2)", fontSize:"10px", letterSpacing:"0.4em", marginTop:"10px" }}>
             REJECT DEFAULT
           </div>
-          <div style={{ display:"flex", gap:"10px", justifyContent:"center", marginTop:"16px" }}>
-            {NODES.filter(n => n.primer).map(n => (
-              <div key={n.id} onClick={() => navigate(n.id)} style={{
-                color:ACCENT, fontSize:"11px", letterSpacing:"0.2em",
-                border:"1px solid rgba(0,51,204,0.45)", padding:"6px 14px",
-                boxShadow:"0 0 18px rgba(0,51,204,0.14)", cursor:"pointer",
-              }}>{n.label}</div>
-            ))}
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"8px", marginTop:"16px" }}>
+            {(['command-os','c-max','manifesto'] as const)
+              .map(id => NODES.find(n => n.id === id)!)
+              .filter(Boolean)
+              .map(n => (
+                <div key={n.id}
+                  onClick={() => navigate(n.id)}
+                  onMouseEnter={() => setHoveredMobilePrimer(n.id)}
+                  onMouseLeave={() => setHoveredMobilePrimer(null)}
+                  onTouchStart={() => setHoveredMobilePrimer(n.id)}
+                  onTouchEnd={() => setHoveredMobilePrimer(null)}
+                  style={{
+                    color:ACCENT, fontSize:"11px", letterSpacing:"0.2em",
+                    border: hoveredMobilePrimer === n.id
+                      ? "1px solid rgba(0,51,204,0.65)"
+                      : "1px solid transparent",
+                    padding:"6px 14px", cursor:"pointer",
+                    width:"120px", textAlign:"center",
+                    boxShadow: hoveredMobilePrimer === n.id ? "0 0 18px rgba(0,51,204,0.18)" : "none",
+                    transition:"border 0.15s, box-shadow 0.15s",
+                  }}>{n.label}</div>
+              ))
+            }
           </div>
           <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"9px", letterSpacing:"0.34em", marginTop:"10px" }}>START HERE</div>
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { useDiagnostic } from '@/context/DiagnosticContext'
 import { QUESTIONS, DOMAIN_LABELS } from '@/lib/diagnostic/questions'
 import type { Domain } from '@/types/diagnostic'
@@ -49,6 +50,34 @@ export default function DiagnosticShell() {
   return (
     <div style={{ position: 'relative', minHeight: '100vh', background: '#000000' }}>
       <AmbientBackground activeDomain={activeDomain} />
+
+      {/* ── HOOK HEADER ──────────────────────── */}
+      {phase === 'hook' && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0,
+          height: '52px', zIndex: 40,
+          display: 'flex', alignItems: 'center',
+          padding: '0 28px',
+          borderBottom: '1px solid #111',
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(12px)',
+        }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+            <svg width={18} height={18} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="11" y="11" width="14" height="14" rx="2" stroke="white" strokeWidth="2.2" fill="none"/>
+              <line x1="11" y1="11" x2="4"  y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+              <line x1="25" y1="11" x2="32" y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+              <line x1="11" y1="25" x2="4"  y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+              <line x1="25" y1="25" x2="32" y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+            </svg>
+            <span style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: '11px', letterSpacing: '0.22em',
+              color: 'rgba(255,255,255,0.45)',
+            }}>CORE X LAB</span>
+          </Link>
+        </div>
+      )}
 
       {/* ── HOOK ─────────────────────────────── */}
       {phase === 'hook' && <HookScreen />}

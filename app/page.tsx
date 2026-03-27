@@ -154,13 +154,14 @@ export default function App() {
 
     // Touch spin state
     let autoSpin    = true;
-    let spinOffset  = 0;       // offset so resume continues smoothly from manual position
-    let manualRotY  = 0;       // current rotation.y during manual control
-    let manualRotX  = 0.22;   // current rotation.x during manual control
+    let spinOffset  = 0;
+    let manualRotY  = 0;
+    let manualRotX  = 0.22;
     let lastTouchX  = 0;
     let lastTouchY  = 0;
     let idleTimer: ReturnType<typeof setTimeout> | null = null;
     let touchStart  = { x: 0, y: 0, time: 0 };
+    let gestureIntent: 'unknown' | 'rotate' | 'scroll' = 'unknown';
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -192,11 +193,11 @@ export default function App() {
 
     // ── Touch handlers ──────────────────────────────────────────
     const onTouchStart = (e: TouchEvent) => {
+      gestureIntent = 'unknown';
       const touch = e.touches[0];
       touchStart = { x: touch.clientX, y: touch.clientY, time: Date.now() };
       lastTouchX = touch.clientX;
       lastTouchY = touch.clientY;
-      // Freeze auto-spin, capture current rotation
       if (autoSpin) {
         manualRotY = group.rotation.y;
         manualRotX = group.rotation.x;
@@ -207,17 +208,32 @@ export default function App() {
 
     const onTouchMove = (e: TouchEvent) => {
       if (e.touches.length !== 1) return;
+
+      // Determine gesture intent on first meaningful movement
+      if (gestureIntent === 'unknown') {
+        const touch = e.touches[0];
+        const dx = Math.abs(touch.clientX - touchStart.x);
+        const dy = Math.abs(touch.clientY - touchStart.y);
+        if (dx > 6 || dy > 6) {
+          gestureIntent = dy > dx ? 'scroll' : 'rotate';
+        }
+      }
+
+      // Vertical swipe → let native scroll handle it
+      if (gestureIntent === 'scroll') return;
+
       e.preventDefault();
       const touch = e.touches[0];
       manualRotY += (touch.clientX - lastTouchX) * 0.009;
       manualRotX += (touch.clientY - lastTouchY) * 0.009;
-      // Clamp X so the sphere doesn't flip upside-down
       manualRotX = Math.max(-1.2, Math.min(1.6, manualRotX));
       lastTouchX = touch.clientX;
       lastTouchY = touch.clientY;
     };
 
     const onTouchEnd = (e: TouchEvent) => {
+      if (gestureIntent === 'scroll') return;
+
       const touch = e.changedTouches[0];
       const dx = touch.clientX - touchStart.x;
       const dy = touch.clientY - touchStart.y;
@@ -240,7 +256,7 @@ export default function App() {
       // Start 5-second idle timer then resume auto-spin
       idleTimer = setTimeout(() => {
         const now = Date.now() * 0.001;
-        spinOffset = manualRotY - now * 0.12; // resume seamlessly from current angle
+        spinOffset = manualRotY - now * 0.12;
         autoSpin = true;
         idleTimer = null;
       }, 5000);
@@ -258,10 +274,9 @@ export default function App() {
       raf = requestAnimationFrame(animate);
       const t = Date.now() * 0.001;
       const rotY = autoSpin ? t * 0.12 + spinOffset : manualRotY;
-      // On auto-spin, lerp X back to resting tilt (0.22); on manual, use drag value
       const targetX = autoSpin ? 0.22 : manualRotX;
       group.rotation.x += (targetX - group.rotation.x) * (autoSpin ? 0.04 : 1);
-      if (autoSpin) manualRotX = group.rotation.x; // keep manualRotX in sync
+      if (autoSpin) manualRotX = group.rotation.x;
       group.rotation.y    = rotY;
       wfSphere.rotation.y = rotY;
       wfSphere.rotation.x = group.rotation.x;
@@ -312,164 +327,220 @@ export default function App() {
 
   return (
     <div style={{
-      width:"100vw", height:"100vh", background:"#000", overflow:"hidden", position:"relative",
+      width:"100vw",
+      background:"#000",
+      position:"relative",
       opacity: loaded ? 1 : 0,
       transition: transitioning ? "transform 0.5s ease-in" : "opacity 1.6s ease",
       transform: transitioning ? "scale(1.07)" : "scale(1)",
+      height: "100vh",
+      overflow: isMobile ? "auto" : "hidden",
     }}>
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
-      <DotGrid />
+      {/* ── Sphere section (full viewport height) ── */}
+      <div style={{ position:"relative", height:"100vh", overflow:"hidden" }}>
 
-      <div ref={mountRef} style={{ position:"absolute", inset:0 }} />
+        <DotGrid />
 
-      {/* Scanlines */}
-      <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:3,
-        background:"repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px)" }} />
+        <div ref={mountRef} style={{ position:"absolute", inset:0 }} />
 
-      {/* Vignette */}
-      <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:2,
-        background:"radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.72) 100%)" }} />
+        {/* Scanlines */}
+        <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:3,
+          background:"repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px)" }} />
 
-      {/* Node labels */}
-      <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:6 }}>
-        {NODES.map((n, i) => (
-          <div key={n.id} ref={el => { labelRefs.current[i] = el; }}
-            style={{ position:"absolute", transform:"translate(-50%, calc(-100% - 14px))",
-              fontFamily:"'IBM Plex Mono', monospace", textAlign:"center",
-              whiteSpace:"nowrap", pointerEvents:"none", transition:"opacity 0.4s" }}>
-            <div style={{
-              color: n.primer ? ACCENT : "#ccc",
-              fontSize: "10px", letterSpacing: "0.22em", fontWeight: n.primer ? 700 : 400,
-              textShadow: n.primer
-                ? "0 0 18px rgba(0,51,204,1), 0 0 40px rgba(0,51,204,0.4)"
-                : "0 0 10px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8)",
-            }}>{n.label}</div>
-            {n.primer && (
-              <div style={{
-                color: "rgba(0,51,204,0.8)",
-                fontSize:"7px", letterSpacing:"0.18em", marginTop:"3px",
-              }}>▸ ENTER</div>
-            )}
-          </div>
-        ))}
-      </div>
+        {/* Vignette */}
+        <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:2,
+          background:"radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.72) 100%)" }} />
 
-      {/* Top-center logo (desktop) / logo + online + clock (mobile) */}
-      {isMobile ? (
-        <div style={{
-          position:"absolute", top:24, left:"50%", transform:"translateX(-50%)",
-          zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", gap:"0px",
-        }}>
-          <svg width={24} height={24} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="11" y="11" width="14" height="14" rx="2" stroke="white" strokeWidth="2.2" fill="none"/>
-            <line x1="11" y1="11" x2="4"  y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-            <line x1="25" y1="11" x2="32" y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-            <line x1="11" y1="25" x2="4"  y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-            <line x1="25" y1="25" x2="32" y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-          </svg>
-          <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"14px", letterSpacing:"0.12em", marginTop:"9px" }}>CORE X LAB</div>
-          <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.25)", fontSize:"11px", letterSpacing:"0.12em", marginTop:"7px" }}>{clock}</div>
-        </div>
-      ) : (
-        <div style={{ position:"absolute", top:28, left:"50%", transform:"translateX(-50%)", zIndex:10 }}>
-          <svg width={22} height={22} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="11" y="11" width="14" height="14" rx="2" stroke="white" strokeWidth="2.2" fill="none"/>
-            <line x1="11" y1="11" x2="4"  y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-            <line x1="25" y1="11" x2="32" y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-            <line x1="11" y1="25" x2="4"  y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-            <line x1="25" y1="25" x2="32" y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-          </svg>
-        </div>
-      )}
-
-      {/* Top-left: ONLINE on mobile, CORE X LAB + SYSTEM MAP on desktop */}
-      {isMobile ? (
-        <div style={{ position:"absolute", top:18, left:16, zIndex:10, fontFamily:"'IBM Plex Mono', monospace" }}>
-          <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.28em" }}>● ONLINE</div>
-        </div>
-      ) : (
-        <div style={{ position:"absolute", top:28, left:32, zIndex:10 }}>
-          <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"18px", letterSpacing:"0.44em" }}>CORE X LAB</div>
-          <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize:"30px", letterSpacing:"0.24em", marginTop:"6px" }}>SYSTEM MAP</div>
-        </div>
-      )}
-
-      {/* Top-right */}
-      <div style={{ position:"absolute", top: isMobile ? 18 : 28, right: isMobile ? 16 : 32, zIndex:20, fontFamily:"'IBM Plex Mono', monospace", display:"flex", alignItems:"center", gap:"18px" }}>
-        {!isMobile && (
-          <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-            <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.3em" }}>● ONLINE</div>
-            <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"12px" }}>{clock}</div>
-          </div>
-        )}
-        <button onClick={() => setMenuOpen(o => !o)} style={{
-          background:"none", border:"none", outline:"none",
-          cursor:"pointer", padding:"4px 0",
-          display:"flex", flexDirection:"column", gap:"5px", alignItems:"center",
-        }}>
-          {[0,1,2].map(j => (
-            <div key={j} style={{
-              width:"20px", height:"1px",
-              background: menuOpen ? ACCENT : "rgba(255,255,255,0.75)",
-              transition:"all 0.25s",
-              transform: menuOpen
-                ? j===0 ? "rotate(45deg) translate(4px,4px)"
-                : j===2 ? "rotate(-45deg) translate(4px,-4px)"
-                : "scaleX(0)"
-                : "none",
-            }} />
-          ))}
-        </button>
-      </div>
-
-      {/* Dropdown nav */}
-      <div style={{
-        position:"absolute", top:0, right:0, zIndex:15,
-        width: isMobile ? "100vw" : "260px",
-        background:"rgba(0,0,0,0.55)",
-        backdropFilter:"blur(24px) saturate(160%)",
-        WebkitBackdropFilter:"blur(24px) saturate(160%)",
-        maxHeight: menuOpen ? "100vh" : "0",
-        overflow:"hidden",
-        transition:"max-height 0.45s cubic-bezier(0.16,1,0.3,1)",
-      }}>
-        <div style={{ padding:"72px 28px 28px", overflowY:"auto", maxHeight:"100vh" }}>
+        {/* Node labels */}
+        <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:6 }}>
           {NODES.map((n, i) => (
-            <div key={n.id} onClick={() => navigate(n.id)} style={{
-              display:"flex", alignItems:"center", gap:"14px",
-              padding:"11px 0",
-              borderBottom:"none",
-              cursor:"pointer", fontFamily:"'IBM Plex Mono', monospace",
-              transition:"padding-left 0.15s",
-            }}
-              onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.paddingLeft = "8px"}
-              onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.paddingLeft = "0px"}
-            >
+            <div key={n.id} ref={el => { labelRefs.current[i] = el; }}
+              style={{ position:"absolute", transform:"translate(-50%, calc(-100% - 14px))",
+                fontFamily:"'IBM Plex Mono', monospace", textAlign:"center",
+                whiteSpace:"nowrap", pointerEvents:"none", transition:"opacity 0.4s" }}>
               <div style={{
-                width:"6px", height:"6px", borderRadius:"50%", flexShrink:0,
-                background: n.primer ? ACCENT : "rgba(255,255,255,0.3)",
-                boxShadow: n.primer ? `0 0 8px ${ACCENT}` : "none",
-              }} />
-              <div style={{ flex:1 }}>
-                <div style={{ color: n.primer ? ACCENT : "#fff", fontSize:"15px", letterSpacing:"0.18em" }}>{n.label}</div>
-                <div style={{ color:"rgba(255,255,255,0.25)", fontSize:"10px", letterSpacing:"0.12em", marginTop:"2px" }}>{n.sub}</div>
-              </div>
-              {n.primer && <div style={{ color:ACCENT, fontSize:"10px", letterSpacing:"0.18em" }}>START</div>}
+                color: n.primer ? ACCENT : "#ccc",
+                fontSize: "10px", letterSpacing: "0.22em", fontWeight: n.primer ? 700 : 400,
+                textShadow: n.primer
+                  ? "0 0 18px rgba(0,51,204,1), 0 0 40px rgba(0,51,204,0.4)"
+                  : "0 0 10px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8)",
+              }}>{n.label}</div>
+              {n.primer && (
+                <div style={{
+                  color: "rgba(0,51,204,0.8)",
+                  fontSize:"7px", letterSpacing:"0.18em", marginTop:"3px",
+                }}>▸ ENTER</div>
+              )}
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Bottom — desktop: split left/right | mobile: centered column */}
-      {isMobile ? (
+        {/* Top-center logo (desktop) / logo + clock (mobile) */}
+        {isMobile ? (
+          <div style={{
+            position:"absolute", top:24, left:"50%", transform:"translateX(-50%)",
+            zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", gap:"0px",
+          }}>
+            <svg width={24} height={24} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="11" y="11" width="14" height="14" rx="2" stroke="white" strokeWidth="2.2" fill="none"/>
+              <line x1="11" y1="11" x2="4"  y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+              <line x1="25" y1="11" x2="32" y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+              <line x1="11" y1="25" x2="4"  y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+              <line x1="25" y1="25" x2="32" y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+            </svg>
+            <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"14px", letterSpacing:"0.12em", marginTop:"9px" }}>CORE X LAB</div>
+            <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.25)", fontSize:"11px", letterSpacing:"0.12em", marginTop:"7px" }}>{clock}</div>
+          </div>
+        ) : (
+          <div style={{ position:"absolute", top:28, left:"50%", transform:"translateX(-50%)", zIndex:10 }}>
+            <svg width={22} height={22} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="11" y="11" width="14" height="14" rx="2" stroke="white" strokeWidth="2.2" fill="none"/>
+              <line x1="11" y1="11" x2="4"  y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+              <line x1="25" y1="11" x2="32" y2="4"  stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+              <line x1="11" y1="25" x2="4"  y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+              <line x1="25" y1="25" x2="32" y2="32" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+            </svg>
+          </div>
+        )}
+
+        {/* Top-left */}
+        {isMobile ? (
+          <div style={{ position:"absolute", top:18, left:16, zIndex:10, fontFamily:"'IBM Plex Mono', monospace" }}>
+            <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.28em" }}>● ONLINE</div>
+          </div>
+        ) : (
+          <div style={{ position:"absolute", top:28, left:32, zIndex:10 }}>
+            <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"18px", letterSpacing:"0.44em" }}>CORE X LAB</div>
+            <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize:"30px", letterSpacing:"0.24em", marginTop:"6px" }}>SYSTEM MAP</div>
+          </div>
+        )}
+
+        {/* Top-right */}
+        <div style={{ position:"absolute", top: isMobile ? 18 : 28, right: isMobile ? 16 : 32, zIndex:20, fontFamily:"'IBM Plex Mono', monospace", display:"flex", alignItems:"center", gap:"18px" }}>
+          {!isMobile && (
+            <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+              <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.3em" }}>● ONLINE</div>
+              <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"12px" }}>{clock}</div>
+            </div>
+          )}
+          <button onClick={() => setMenuOpen(o => !o)} style={{
+            background:"none", border:"none", outline:"none",
+            cursor:"pointer", padding:"4px 0",
+            display:"flex", flexDirection:"column", gap:"5px", alignItems:"center",
+          }}>
+            {[0,1,2].map(j => (
+              <div key={j} style={{
+                width:"20px", height:"1px",
+                background: menuOpen ? ACCENT : "rgba(255,255,255,0.75)",
+                transition:"all 0.25s",
+                transform: menuOpen
+                  ? j===0 ? "rotate(45deg) translate(4px,4px)"
+                  : j===2 ? "rotate(-45deg) translate(4px,-4px)"
+                  : "scaleX(0)"
+                  : "none",
+              }} />
+            ))}
+          </button>
+        </div>
+
+        {/* Dropdown nav */}
         <div style={{
-          position:"absolute", bottom:20,
-          left:"50%", transform:"translateX(-50%)",
-          zIndex:10, textAlign:"center",
+          position:"absolute", top:0, right:0, zIndex:15,
+          width: isMobile ? "100vw" : "260px",
+          background:"rgba(0,0,0,0.55)",
+          backdropFilter:"blur(24px) saturate(160%)",
+          WebkitBackdropFilter:"blur(24px) saturate(160%)",
+          maxHeight: menuOpen ? "100vh" : "0",
+          overflow:"hidden",
+          transition:"max-height 0.45s cubic-bezier(0.16,1,0.3,1)",
+        }}>
+          <div style={{ padding:"72px 28px 28px", overflowY:"auto", maxHeight:"100vh" }}>
+            {NODES.map((n, i) => (
+              <div key={n.id} onClick={() => navigate(n.id)} style={{
+                display:"flex", alignItems:"center", gap:"14px",
+                padding:"11px 0",
+                borderBottom:"none",
+                cursor:"pointer", fontFamily:"'IBM Plex Mono', monospace",
+                transition:"padding-left 0.15s",
+              }}
+                onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.paddingLeft = "8px"}
+                onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.paddingLeft = "0px"}
+              >
+                <div style={{
+                  width:"6px", height:"6px", borderRadius:"50%", flexShrink:0,
+                  background: n.primer ? ACCENT : "rgba(255,255,255,0.3)",
+                  boxShadow: n.primer ? `0 0 8px ${ACCENT}` : "none",
+                }} />
+                <div style={{ flex:1 }}>
+                  <div style={{ color: n.primer ? ACCENT : "#fff", fontSize:"15px", letterSpacing:"0.18em" }}>{n.label}</div>
+                  <div style={{ color:"rgba(255,255,255,0.25)", fontSize:"10px", letterSpacing:"0.12em", marginTop:"2px" }}>{n.sub}</div>
+                </div>
+                {n.primer && <div style={{ color:ACCENT, fontSize:"10px", letterSpacing:"0.18em" }}>START</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop bottom split */}
+        {!isMobile && (
+          <>
+            <div style={{ position:"absolute", bottom:28, left:32, zIndex:10 }}>
+              <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize:"49px", letterSpacing:"0.1em", lineHeight:1.0 }}>
+                OPERATE<br/>BY DESIGN.
+              </div>
+              <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.2)", fontSize:"19px", letterSpacing:"0.4em", marginTop:"10px" }}>
+                REJECT DEFAULT
+              </div>
+            </div>
+            <div style={{ position:"absolute", bottom:28, right:32, zIndex:10, textAlign:"right", fontFamily:"'IBM Plex Mono', monospace" }}>
+              <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"18px", letterSpacing:"0.34em", marginBottom:"10px" }}>START HERE</div>
+              <div style={{ display:"flex", gap:"8px", justifyContent:"flex-end" }}>
+                {NODES.filter(n => n.primer).map(n => (
+                  <div key={n.id} onClick={() => navigate(n.id)} style={{
+                    color:ACCENT, fontSize:"19px", letterSpacing:"0.2em",
+                    border:"1px solid rgba(0,51,204,0.45)", padding:"6px 14px",
+                    boxShadow:"0 0 18px rgba(0,51,204,0.14)", cursor:"pointer",
+                  }}>{n.label}</div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Hover tooltip */}
+        {hovered && (
+          <div style={{
+            position:"absolute", left:"50%", bottom:"calc(50% + 70px)",
+            transform:"translateX(-50%)", zIndex:20,
+            background:"rgba(0,0,0,0.98)",
+            border:`1px solid ${hovered.primer ? ACCENT : "rgba(255,255,255,0.12)"}`,
+            padding:"14px 22px", fontFamily:"'IBM Plex Mono', monospace",
+            pointerEvents:"none",
+            boxShadow: hovered.primer ? "0 0 40px rgba(0,51,204,0.2)" : "none",
+            minWidth:"190px",
+          }}>
+            <div style={{ color: hovered.primer ? ACCENT : "#fff", fontSize:"10px", letterSpacing:"0.22em", fontWeight:700 }}>{hovered.label}</div>
+            <div style={{ color:"rgba(255,255,255,0.3)", fontSize:"7.5px", letterSpacing:"0.16em", marginTop:"5px" }}>{hovered.sub}</div>
+            {hovered.primer && <div style={{ color:ACCENT, fontSize:"7px", letterSpacing:"0.22em", marginTop:"12px" }}>▸ RECOMMENDED ENTRY POINT</div>}
+          </div>
+        )}
+
+        {/* Click outside closes menu */}
+        {menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position:"absolute", inset:0, zIndex:14 }} />}
+
+      </div>{/* end sphere section */}
+
+      {/* ── Mobile bottom content (below the fold) ── */}
+      {isMobile && (
+        <div style={{
+          position:"relative", zIndex:10,
+          background:"#000",
+          padding:"52px 24px 48px",
+          textAlign:"center",
           fontFamily:"'IBM Plex Mono', monospace",
-          whiteSpace:"nowrap",
         }}>
           <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize:"clamp(28px,9vw,48px)", letterSpacing:"0.1em", lineHeight:1.0 }}>
             OPERATE BY DESIGN.
@@ -477,7 +548,7 @@ export default function App() {
           <div style={{ color:"rgba(255,255,255,0.2)", fontSize:"10px", letterSpacing:"0.4em", marginTop:"10px" }}>
             REJECT DEFAULT
           </div>
-          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"8px", marginTop:"16px" }}>
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"8px", marginTop:"20px" }}>
             {(['command-os','c-max','manifesto'] as const)
               .map(id => NODES.find(n => n.id === id)!)
               .filter(Boolean)
@@ -501,55 +572,9 @@ export default function App() {
               ))
             }
           </div>
-          <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"9px", letterSpacing:"0.34em", marginTop:"10px" }}>START HERE</div>
-        </div>
-      ) : (
-        <>
-          {/* Bottom-left */}
-          <div style={{ position:"absolute", bottom:28, left:32, zIndex:10 }}>
-            <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize:"49px", letterSpacing:"0.1em", lineHeight:1.0 }}>
-              OPERATE<br/>BY DESIGN.
-            </div>
-            <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.2)", fontSize:"19px", letterSpacing:"0.4em", marginTop:"10px" }}>
-              REJECT DEFAULT
-            </div>
-          </div>
-          {/* Bottom-right */}
-          <div style={{ position:"absolute", bottom:28, right:32, zIndex:10, textAlign:"right", fontFamily:"'IBM Plex Mono', monospace" }}>
-            <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"18px", letterSpacing:"0.34em", marginBottom:"10px" }}>START HERE</div>
-            <div style={{ display:"flex", gap:"8px", justifyContent:"flex-end" }}>
-              {NODES.filter(n => n.primer).map(n => (
-                <div key={n.id} onClick={() => navigate(n.id)} style={{
-                  color:ACCENT, fontSize:"19px", letterSpacing:"0.2em",
-                  border:"1px solid rgba(0,51,204,0.45)", padding:"6px 14px",
-                  boxShadow:"0 0 18px rgba(0,51,204,0.14)", cursor:"pointer",
-                }}>{n.label}</div>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Hover tooltip */}
-      {hovered && (
-        <div style={{
-          position:"absolute", left:"50%", bottom:"calc(50% + 70px)",
-          transform:"translateX(-50%)", zIndex:20,
-          background:"rgba(0,0,0,0.98)",
-          border:`1px solid ${hovered.primer ? ACCENT : "rgba(255,255,255,0.12)"}`,
-          padding:"14px 22px", fontFamily:"'IBM Plex Mono', monospace",
-          pointerEvents:"none",
-          boxShadow: hovered.primer ? "0 0 40px rgba(0,51,204,0.2)" : "none",
-          minWidth:"190px",
-        }}>
-          <div style={{ color: hovered.primer ? ACCENT : "#fff", fontSize:"10px", letterSpacing:"0.22em", fontWeight:700 }}>{hovered.label}</div>
-          <div style={{ color:"rgba(255,255,255,0.3)", fontSize:"7.5px", letterSpacing:"0.16em", marginTop:"5px" }}>{hovered.sub}</div>
-          {hovered.primer && <div style={{ color:ACCENT, fontSize:"7px", letterSpacing:"0.22em", marginTop:"12px" }}>▸ RECOMMENDED ENTRY POINT</div>}
+          <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"9px", letterSpacing:"0.34em", marginTop:"14px" }}>START HERE</div>
         </div>
       )}
-
-      {/* Click outside closes menu */}
-      {menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position:"absolute", inset:0, zIndex:14 }} />}
 
       {/* Page transition overlay */}
       {transitioning && (
@@ -568,9 +593,6 @@ export default function App() {
         @keyframes fadeOverlay {
           from { opacity: 0; }
           to   { opacity: 1; }
-        }
-        @media (max-width: 768px) {
-          /* ensure nav takes full width on mobile */
         }
       `}</style>
     </div>

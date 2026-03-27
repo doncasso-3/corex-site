@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import CoreXFooter from "@/components/CoreXFooter";
 import DotGrid from "@/components/DotGrid";
+import SiteHeader from "@/components/SiteHeader";
 
 const LINES: { cls: string; delay: number; text: string }[] = [
   { cls: "line-opening",    delay: 800,   text: "Most people are not lost." },
@@ -42,7 +43,6 @@ export default function ManifestoPage() {
   const [cursorVisible, setCursorVisible] = useState(false);
   const [backVisible, setBackVisible]     = useState(false);
   const [skipped, setSkipped]             = useState(false);
-  const [headerVisible, setHeaderVisible] = useState(true);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
@@ -53,20 +53,7 @@ export default function ManifestoPage() {
     const t1 = setTimeout(() => setCursorVisible(true), CURSOR_DELAY);
     const t2 = setTimeout(() => setBackVisible(true), BACK_DELAY);
     timers.current.push(t1, t2);
-    let lastY = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY;
-      if (y < 10) setHeaderVisible(true);
-      else if (y > lastY) setHeaderVisible(false);
-      else setHeaderVisible(true);
-      lastY = y;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-
-    return () => {
-      timers.current.forEach(clearTimeout);
-      window.removeEventListener("scroll", onScroll);
-    };
+    return () => { timers.current.forEach(clearTimeout); };
   }, []);
 
   const skipAll = () => {
@@ -288,9 +275,8 @@ export default function ManifestoPage() {
         }
       `}</style>
 
+      <SiteHeader right="DOC — 001 / RESTRICTED" />
       <div className="mf-body" onClick={skipAll}>
-        <div className="access-tag" style={{ transform: headerVisible ? "translateY(0)" : "translateY(-160%)" }}><Link href="/" style={{ textDecoration: "none", color: "inherit" }}>CORE X LAB</Link> &nbsp;/&nbsp; MANIFESTO</div>
-        <div className="doc-id" style={{ transform: headerVisible ? "translateY(0)" : "translateY(-160%)" }}>DOC — 001 &nbsp;/&nbsp; RESTRICTED</div>
 
         <main className="content">
           {renderContent()}

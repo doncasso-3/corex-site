@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import CoreXFooter from "@/components/CoreXFooter";
 import DotGrid from "@/components/DotGrid";
+import SiteHeader from "@/components/SiteHeader";
 
 export default function WaitlistPage() {
   const [clock, setClock] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [email, setEmail] = useState("");
   const [inputError, setInputError] = useState(false);
-  const [headerVisible, setHeaderVisible] = useState(true);
 
   useEffect(() => {
     const tick = () => {
@@ -20,21 +20,7 @@ export default function WaitlistPage() {
     };
     tick();
     const id = setInterval(tick, 1000);
-
-    let lastY = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY;
-      if (y < 10) setHeaderVisible(true);
-      else if (y > lastY) setHeaderVisible(false);
-      else setHeaderVisible(true);
-      lastY = y;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-
-    return () => {
-      clearInterval(id);
-      window.removeEventListener("scroll", onScroll);
-    };
+    return () => clearInterval(id);
   }, []);
 
   const transmit = () => {
@@ -406,9 +392,7 @@ export default function WaitlistPage() {
         /* Mobile */
         @media (max-width: 768px) {
           .wl-main { padding: 90px 20px 60px; max-width: 100%; }
-          .chrome-top { padding: 16px 20px; }
-          .chrome-right { margin-right: 0; font-size: 9px; gap: 10px; }
-          .chrome-right span:last-child { display: none; }
+          .signal-active-label { display: none; }
           .rail-right { display: none; }
           .season-row { flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
           .copy-block { max-width: 100%; margin-bottom: 32px; }
@@ -420,18 +404,16 @@ export default function WaitlistPage() {
         }
       `}</style>
 
-      <div className="wl-body">
-        {/* Top Chrome */}
-        <header className="chrome-top" style={{ transform: headerVisible ? "translateY(0)" : "translateY(-100%)" }}>
-          <Link href="/" className="chrome-lab" style={{ textDecoration: "none", color: "inherit" }}>CORE X LAB</Link>
-          <div className="chrome-right">
-            <div className="signal-indicator">
-              <div className="signal-dot" />
-              <span>{clock}</span>
-            </div>
-            <span>SIGNAL ACTIVE</span>
+      <SiteHeader right={
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="signal-dot" />
+            <span>{clock}</span>
           </div>
-        </header>
+          <span className="signal-active-label">SIGNAL ACTIVE</span>
+        </div>
+      } />
+      <div className="wl-body">
 
         {/* Right Rail */}
         <div className="rail-right">

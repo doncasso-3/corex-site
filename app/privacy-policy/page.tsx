@@ -1,12 +1,13 @@
 import Link from "next/link";
 import CoreXFooter from "@/components/CoreXFooter";
 import DotGrid from "@/components/DotGrid";
+import SiteHeader from "@/components/SiteHeader";
 
 const styles = {
   page: {
     background: "#000",
     minHeight: "100vh",
-    padding: "80px 0",
+    padding: "112px 0 80px",
     fontFamily: "'IBM Plex Mono', monospace",
   } as React.CSSProperties,
   inner: {
@@ -118,9 +119,8 @@ export default function PrivacyPolicy() {
           .pp-title { font-size: 32px !important; }
         }
       `}</style>
+      <SiteHeader right="LEGAL / PRIVACY" scrollHide={false} />
       <div className="pp-inner" style={styles.inner}>
-
-        <Link href="/" style={styles.back}>← BACK</Link>
 
         <div style={styles.eyebrow}>CORE X LAB — LEGAL</div>
         <div className="pp-title" style={styles.title}>PRIVACY<br />POLICY</div>

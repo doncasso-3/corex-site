@@ -538,7 +538,7 @@ export default function App() {
         <div style={{
           position:"relative", zIndex:10,
           background:"#000",
-          padding:"52px 24px 48px",
+          padding:"20px 24px 48px",
           textAlign:"center",
           fontFamily:"'IBM Plex Mono', monospace",
         }}>

@@ -96,7 +96,7 @@ export default function App() {
 
     const wfSphere = new THREE.Mesh(
       new THREE.SphereGeometry(R, 32, 20),
-      new THREE.MeshBasicMaterial({ color: 0x3d3d3d, wireframe: true, transparent: true, opacity: 0.45 })
+      new THREE.MeshBasicMaterial({ color: 0x3d3d3d, wireframe: true, transparent: true, opacity: 0.18 })
     );
     scene.add(wfSphere);
 

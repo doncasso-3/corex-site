@@ -96,7 +96,7 @@ export default function App() {
 
     const wfSphere = new THREE.Mesh(
       new THREE.SphereGeometry(R, 32, 20),
-      new THREE.MeshBasicMaterial({ color: 0x0a0a0a, wireframe: true, transparent: true, opacity: 0.15 })
+      new THREE.MeshBasicMaterial({ color: 0x3d3d3d, wireframe: true, transparent: true, opacity: 0.45 })
     );
     scene.add(wfSphere);
 
@@ -108,7 +108,7 @@ export default function App() {
     CONNECTIONS.forEach(([a, b]) => {
       const geo = new THREE.BufferGeometry().setFromPoints([positions[a].clone(), positions[b].clone()]);
       group.add(new THREE.Line(geo,
-        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.38, linewidth: 2 })
+        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.38, linewidth: 5 })
       ));
     });
 

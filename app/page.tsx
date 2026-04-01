@@ -14,6 +14,18 @@ const NODE_ROUTES: Record<string, string> = {
 const ACCENT = "#0033CC";
 const ACCENT_HEX = 0x0033cc;
 
+// ── Liquid Glass token system ────────────────────────────────────────────────
+const glass = {
+  bg:        "rgba(255,255,255,0.02)",
+  bgHover:   "rgba(255,255,255,0.04)",
+  border:    "1px solid rgba(255,255,255,0.09)",
+  blur:      "blur(24px) saturate(160%)",
+  blurHeavy: "blur(32px) saturate(180%)",
+  inset:     "inset 0 0.5px 0 rgba(255,255,255,0.10), inset 0 -0.5px 0 rgba(0,0,0,0.2)",
+  shadow:    "0 8px 32px rgba(0,0,0,0.45)",
+  radius:    "10px",
+};
+
 const NODES = [
   { id: "mental-os",   label: "MENTAL OS",   sub: "Framework",   phi: 1.10, theta: 0.60, primer: false },
   { id: "lab",         label: "THE LAB",     sub: "Origin",      phi: 1.90, theta: 2.20, primer: false },
@@ -58,7 +70,6 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(false);
   const [hoveredMobilePrimer, setHoveredMobilePrimer] = useState<string | null>(null);
 
-  // Kept in a ref so the useEffect canvas-click closure always sees the latest version
   const navigateRef = useRef<(id: string) => void>(() => {});
   navigateRef.current = (id: string) => {
     const route = NODE_ROUTES[id];
@@ -72,10 +83,11 @@ export default function App() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const tickClock = () => {
       const now = new Date();
-      const tz = now.toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop();
-      setClock(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " " + tz);
+      const tz = now.toLocaleTimeString('en-US', { timeZoneName: 'short', timeZone }).split(' ').pop();
+      setClock(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone }) + " " + tz);
     };
     tickClock();
     const clockId = setInterval(tickClock, 1000);
@@ -96,7 +108,7 @@ export default function App() {
 
     const wfSphere = new THREE.Mesh(
       new THREE.SphereGeometry(R, 32, 20),
-      new THREE.MeshBasicMaterial({ color: 0x3d3d3d, wireframe: true, transparent: true, opacity: 0.18 })
+      new THREE.MeshBasicMaterial({ color: 0x3d3d3d, wireframe: true, transparent: true, opacity: 0.12 })
     );
     scene.add(wfSphere);
 
@@ -108,14 +120,14 @@ export default function App() {
     CONNECTIONS.forEach(([a, b]) => {
       const geo = new THREE.BufferGeometry().setFromPoints([positions[a].clone(), positions[b].clone()]);
       group.add(new THREE.Line(geo,
-        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.38, linewidth: 5 })
+        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.28, linewidth: 5 })
       ));
     });
 
     const haloMeshes: THREE.Mesh[] = [];
 
     NODES.forEach((n, i) => {
-      const r = n.primer ? 0.10 : 0.07;
+      const r = n.primer ? 0.095 : 0.062;
       const mesh = new THREE.Mesh(
         new THREE.SphereGeometry(r, 20, 14),
         new THREE.MeshBasicMaterial({ color: n.primer ? ACCENT_HEX : 0xbbbbbb, transparent: true, opacity: n.primer ? 1 : 0.85 })
@@ -152,7 +164,6 @@ export default function App() {
 
     stateRef.current = { group, wfSphere, positions, haloMeshes };
 
-    // Touch spin state
     let autoSpin    = true;
     let spinOffset  = 0;
     let manualRotY  = 0;
@@ -191,7 +202,6 @@ export default function App() {
     };
     el.addEventListener("click", onCanvasClick);
 
-    // ── Touch handlers ──────────────────────────────────────────
     const onTouchStart = (e: TouchEvent) => {
       gestureIntent = 'unknown';
       const touch = e.touches[0];
@@ -208,20 +218,13 @@ export default function App() {
 
     const onTouchMove = (e: TouchEvent) => {
       if (e.touches.length !== 1) return;
-
-      // Determine gesture intent on first meaningful movement
       if (gestureIntent === 'unknown') {
         const touch = e.touches[0];
         const dx = Math.abs(touch.clientX - touchStart.x);
         const dy = Math.abs(touch.clientY - touchStart.y);
-        if (dx > 6 || dy > 6) {
-          gestureIntent = dy > dx ? 'scroll' : 'rotate';
-        }
+        if (dx > 6 || dy > 6) gestureIntent = dy > dx ? 'scroll' : 'rotate';
       }
-
-      // Vertical swipe → let native scroll handle it
       if (gestureIntent === 'scroll') return;
-
       e.preventDefault();
       const touch = e.touches[0];
       manualRotY += (touch.clientX - lastTouchX) * 0.009;
@@ -233,14 +236,11 @@ export default function App() {
 
     const onTouchEnd = (e: TouchEvent) => {
       if (gestureIntent === 'scroll') return;
-
       const touch = e.changedTouches[0];
       const dx = touch.clientX - touchStart.x;
       const dy = touch.clientY - touchStart.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const elapsed = Date.now() - touchStart.time;
-
-      // Short tap → treat as node click
       if (elapsed < 300 && dist < 12) {
         const rect = el.getBoundingClientRect();
         mouse.x =  ((touch.clientX - rect.left) / W) * 2 - 1;
@@ -252,11 +252,9 @@ export default function App() {
           return;
         }
       }
-
-      // Start 5-second idle timer then resume auto-spin
       idleTimer = setTimeout(() => {
         const now = Date.now() * 0.001;
-        spinOffset = manualRotY - now * 0.12;
+        spinOffset = manualRotY - now * 0.10;
         autoSpin = true;
         idleTimer = null;
       }, 5000);
@@ -265,7 +263,6 @@ export default function App() {
     el.addEventListener("touchstart",  onTouchStart, { passive: true });
     el.addEventListener("touchmove",   onTouchMove,  { passive: false });
     el.addEventListener("touchend",    onTouchEnd);
-    // ────────────────────────────────────────────────────────────
 
     setTimeout(() => setLoaded(true), 400);
 
@@ -273,7 +270,7 @@ export default function App() {
     const animate = () => {
       raf = requestAnimationFrame(animate);
       const t = Date.now() * 0.001;
-      const rotY = autoSpin ? t * 0.12 + spinOffset : manualRotY;
+      const rotY = autoSpin ? t * 0.10 + spinOffset : manualRotY;
       const targetX = autoSpin ? 0.22 : manualRotX;
       group.rotation.x += (targetX - group.rotation.x) * (autoSpin ? 0.04 : 1);
       if (autoSpin) manualRotX = group.rotation.x;
@@ -346,13 +343,32 @@ export default function App() {
 
         <div ref={mountRef} style={{ position:"absolute", inset:0 }} />
 
+        {/* Depth gradient overlay */}
+        <div style={{
+          position:"absolute", inset:0, pointerEvents:"none", zIndex:1,
+          background:"radial-gradient(ellipse 80% 70% at 50% 50%, rgba(14,14,18,0) 0%, rgba(0,0,0,0.55) 100%)",
+        }} />
+
+        {/* Grain texture overlay */}
+        <div style={{
+          position:"absolute", inset:0, pointerEvents:"none", zIndex:2,
+          opacity:0.018,
+          backgroundImage:`url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/></filter><rect width='128' height='128' filter='url(%23n)'/></svg>")`,
+          backgroundRepeat:"repeat",
+          backgroundSize:"128px 128px",
+        }} />
+
         {/* Scanlines */}
-        <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:3,
-          background:"repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px)" }} />
+        <div style={{
+          position:"absolute", inset:0, pointerEvents:"none", zIndex:4,
+          background:"repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px)",
+        }} />
 
         {/* Vignette */}
-        <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:2,
-          background:"radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.72) 100%)" }} />
+        <div style={{
+          position:"absolute", inset:0, pointerEvents:"none", zIndex:3,
+          background:"radial-gradient(ellipse at center, transparent 38%, rgba(0,0,0,0.65) 100%)",
+        }} />
 
         {/* Node labels */}
         <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:6 }}>
@@ -369,10 +385,7 @@ export default function App() {
                   : "0 0 10px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8)",
               }}>{n.label}</div>
               {n.primer && (
-                <div style={{
-                  color: "rgba(0,51,204,0.8)",
-                  fontSize:"7px", letterSpacing:"0.18em", marginTop:"3px",
-                }}>▸ ENTER</div>
+                <div style={{ color:"rgba(0,51,204,0.8)", fontSize:"7px", letterSpacing:"0.18em", marginTop:"3px" }}>▸ ENTER</div>
               )}
             </div>
           ))}
@@ -382,7 +395,7 @@ export default function App() {
         {isMobile ? (
           <div style={{
             position:"absolute", top:24, left:"50%", transform:"translateX(-50%)",
-            zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", gap:"0px",
+            zIndex:10, display:"flex", flexDirection:"column", alignItems:"center",
           }}>
             <svg width={24} height={24} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="11" y="11" width="14" height="14" rx="2" stroke="white" strokeWidth="2.2" fill="none"/>
@@ -406,29 +419,44 @@ export default function App() {
           </div>
         )}
 
-        {/* Top-left */}
-        {isMobile ? (
-          <div style={{ position:"absolute", top:18, left:16, zIndex:10, fontFamily:"'IBM Plex Mono', monospace" }}>
-            <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.28em" }}>● ONLINE</div>
-          </div>
-        ) : (
-          <div style={{ position:"absolute", top:28, left:32, zIndex:10 }}>
+        {/* Top-left panel (desktop) — glass */}
+        {!isMobile && (
+          <div style={{
+            position:"absolute", top:28, left:32, zIndex:10,
+            background: glass.bg,
+            backdropFilter: glass.blur,
+            WebkitBackdropFilter: glass.blur,
+            border: glass.border,
+            borderRadius: glass.radius,
+            boxShadow: `${glass.inset}, ${glass.shadow}`,
+            padding: "14px 20px",
+          }}>
             <div style={{ fontFamily:"'IBM Plex Mono', monospace", color:"rgba(255,255,255,0.28)", fontSize:"18px", letterSpacing:"0.44em" }}>CORE X LAB</div>
             <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize:"30px", letterSpacing:"0.24em", marginTop:"6px" }}>SYSTEM MAP</div>
           </div>
         )}
 
-        {/* Top-right */}
-        <div style={{ position:"absolute", top: isMobile ? 18 : 28, right: isMobile ? 16 : 32, zIndex:20, fontFamily:"'IBM Plex Mono', monospace", display:"flex", alignItems:"center", gap:"18px" }}>
+        {/* Top-right panel — glass, single row: ● ONLINE + clock + divider + hamburger */}
+        <div style={{
+          position:"absolute", top: isMobile ? 16 : 28, right: isMobile ? 16 : 32, zIndex:20,
+          display:"flex", alignItems:"center", gap: isMobile ? "10px" : "14px",
+          background: glass.bg,
+          backdropFilter: glass.blur,
+          WebkitBackdropFilter: glass.blur,
+          border: glass.border,
+          borderRadius: glass.radius,
+          boxShadow: `${glass.inset}, ${glass.shadow}`,
+          padding: "10px 14px",
+          fontFamily:"'IBM Plex Mono', monospace",
+        }}>
+          <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.28em" }}>● ONLINE</div>
           {!isMobile && (
-            <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-              <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.3em" }}>● ONLINE</div>
-              <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"12px" }}>{clock}</div>
-            </div>
+            <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"10px", letterSpacing:"0.08em" }}>{clock}</div>
           )}
+          <div style={{ width:"1px", height:"14px", background:"rgba(255,255,255,0.08)", flexShrink:0 }} />
           <button onClick={() => setMenuOpen(o => !o)} style={{
             background:"none", border:"none", outline:"none",
-            cursor:"pointer", padding:"4px 0",
+            cursor:"pointer", padding:"2px 0",
             display:"flex", flexDirection:"column", gap:"5px", alignItems:"center",
           }}>
             {[0,1,2].map(j => (
@@ -446,23 +474,26 @@ export default function App() {
           </button>
         </div>
 
-        {/* Dropdown nav */}
+        {/* Dropdown nav — glass */}
         <div style={{
           position:"absolute", top:0, right:0, zIndex:15,
           width: isMobile ? "100vw" : "260px",
-          background:"rgba(0,0,0,0.55)",
-          backdropFilter:"blur(24px) saturate(160%)",
-          WebkitBackdropFilter:"blur(24px) saturate(160%)",
+          background:"rgba(6,6,8,0.82)",
+          backdropFilter: glass.blurHeavy,
+          WebkitBackdropFilter: glass.blurHeavy,
+          borderRadius: "0 0 10px 10px",
+          borderLeft: "1px solid rgba(255,255,255,0.07)",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          boxShadow: "-8px 0 40px rgba(0,0,0,0.5)",
           maxHeight: menuOpen ? "100vh" : "0",
           overflow:"hidden",
           transition:"max-height 0.45s cubic-bezier(0.16,1,0.3,1)",
         }}>
           <div style={{ padding:"72px 28px 28px", overflowY:"auto", maxHeight:"100vh" }}>
-            {NODES.map((n, i) => (
+            {NODES.map((n) => (
               <div key={n.id} onClick={() => navigate(n.id)} style={{
                 display:"flex", alignItems:"center", gap:"14px",
                 padding:"11px 0",
-                borderBottom:"none",
                 cursor:"pointer", fontFamily:"'IBM Plex Mono', monospace",
                 transition:"padding-left 0.15s",
               }}
@@ -484,10 +515,19 @@ export default function App() {
           </div>
         </div>
 
-        {/* Desktop bottom split */}
+        {/* Desktop bottom split — glass panels */}
         {!isMobile && (
           <>
-            <div style={{ position:"absolute", bottom:28, left:32, zIndex:10 }}>
+            <div style={{
+              position:"absolute", bottom:28, left:32, zIndex:10,
+              background: glass.bg,
+              backdropFilter: glass.blur,
+              WebkitBackdropFilter: glass.blur,
+              border: glass.border,
+              borderRadius: glass.radius,
+              boxShadow: `${glass.inset}, ${glass.shadow}`,
+              padding: "14px 20px",
+            }}>
               <div style={{ fontFamily:"'Bebas Neue', sans-serif", color:"#fff", fontSize:"49px", letterSpacing:"0.1em", lineHeight:1.0 }}>
                 OPERATE<br/>BY DESIGN.
               </div>
@@ -495,31 +535,54 @@ export default function App() {
                 REJECT DEFAULT
               </div>
             </div>
-            <div style={{ position:"absolute", bottom:28, right:32, zIndex:10, textAlign:"right", fontFamily:"'IBM Plex Mono', monospace" }}>
+            <div style={{
+              position:"absolute", bottom:28, right:32, zIndex:10, textAlign:"right",
+              fontFamily:"'IBM Plex Mono', monospace",
+              background: glass.bg,
+              backdropFilter: glass.blur,
+              WebkitBackdropFilter: glass.blur,
+              border: glass.border,
+              borderRadius: glass.radius,
+              boxShadow: `${glass.inset}, ${glass.shadow}`,
+              padding: "14px 20px",
+            }}>
               <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"18px", letterSpacing:"0.34em", marginBottom:"10px" }}>START HERE</div>
               <div style={{ display:"flex", gap:"8px", justifyContent:"flex-end" }}>
                 {NODES.filter(n => n.primer).map(n => (
                   <div key={n.id} onClick={() => navigate(n.id)} style={{
                     color:ACCENT, fontSize:"19px", letterSpacing:"0.2em",
-                    border:"1px solid rgba(0,51,204,0.45)", padding:"6px 14px",
-                    boxShadow:"0 0 18px rgba(0,51,204,0.14)", cursor:"pointer",
-                  }}>{n.label}</div>
+                    background:"rgba(0,51,204,0.08)",
+                    border:"1px solid rgba(0,51,204,0.28)",
+                    backdropFilter: glass.blur,
+                    WebkitBackdropFilter: glass.blur,
+                    borderRadius: glass.radius,
+                    padding:"6px 14px", cursor:"pointer",
+                    transition:"background 0.15s",
+                  }}
+                    onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = "rgba(0,51,204,0.14)"}
+                    onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = "rgba(0,51,204,0.08)"}
+                  >{n.label}</div>
                 ))}
               </div>
             </div>
           </>
         )}
 
-        {/* Hover tooltip */}
+        {/* Hover tooltip — glass surface */}
         {hovered && (
           <div style={{
             position:"absolute", left:"50%", bottom:"calc(50% + 70px)",
             transform:"translateX(-50%)", zIndex:20,
-            background:"rgba(0,0,0,0.98)",
-            border:`1px solid ${hovered.primer ? ACCENT : "rgba(255,255,255,0.12)"}`,
+            background: hovered.primer ? "rgba(0,20,80,0.55)" : "rgba(12,12,16,0.72)",
+            border: hovered.primer ? `1px solid ${ACCENT}` : glass.border,
+            backdropFilter: glass.blurHeavy,
+            WebkitBackdropFilter: glass.blurHeavy,
+            borderRadius: glass.radius,
+            boxShadow: hovered.primer
+              ? `0 0 40px rgba(0,51,204,0.2), ${glass.inset}`
+              : `${glass.shadow}, ${glass.inset}`,
             padding:"14px 22px", fontFamily:"'IBM Plex Mono', monospace",
             pointerEvents:"none",
-            boxShadow: hovered.primer ? "0 0 40px rgba(0,51,204,0.2)" : "none",
             minWidth:"190px",
           }}>
             <div style={{ color: hovered.primer ? ACCENT : "#fff", fontSize:"10px", letterSpacing:"0.22em", fontWeight:700 }}>{hovered.label}</div>
@@ -561,13 +624,14 @@ export default function App() {
                   onTouchEnd={() => setHoveredMobilePrimer(null)}
                   style={{
                     color:ACCENT, fontSize:"11px", letterSpacing:"0.2em",
-                    border: hoveredMobilePrimer === n.id
-                      ? "1px solid rgba(0,51,204,0.65)"
-                      : "1px solid transparent",
-                    padding:"6px 14px", cursor:"pointer",
-                    width:"120px", textAlign:"center",
-                    boxShadow: hoveredMobilePrimer === n.id ? "0 0 18px rgba(0,51,204,0.18)" : "none",
-                    transition:"border 0.15s, box-shadow 0.15s",
+                    background: hoveredMobilePrimer === n.id ? "rgba(0,51,204,0.14)" : "rgba(0,51,204,0.08)",
+                    border:"1px solid rgba(0,51,204,0.28)",
+                    backdropFilter: glass.blur,
+                    WebkitBackdropFilter: glass.blur,
+                    borderRadius: glass.radius,
+                    padding:"8px 14px", cursor:"pointer",
+                    width:"130px", textAlign:"center",
+                    transition:"background 0.15s",
                   }}>{n.label}</div>
               ))
             }
@@ -581,8 +645,7 @@ export default function App() {
         <div
           style={{
             position:"fixed", inset:0, zIndex:9999,
-            background:"#000",
-            opacity: 0,
+            background:"#000", opacity:0,
             animation:"fadeOverlay 0.45s ease-in forwards",
             pointerEvents:"none",
           }}

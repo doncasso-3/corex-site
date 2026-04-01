@@ -590,8 +590,16 @@ export default function App() {
           </div>
         )}
 
-        {/* Click outside closes menu */}
-        {menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position:"absolute", inset:0, zIndex:14 }} />}
+        {/* Blur overlay — closes menu on click, blurs everything behind nav */}
+        {menuOpen && (
+          <div onClick={() => setMenuOpen(false)} style={{
+            position:"fixed", inset:0, zIndex:18,
+            backdropFilter:"blur(10px) brightness(0.7)",
+            WebkitBackdropFilter:"blur(10px) brightness(0.7)",
+            background:"rgba(0,0,0,0.15)",
+            animation:"overlayIn 0.25s ease forwards",
+          }} />
+        )}
 
       </div>{/* end sphere section */}
 
@@ -653,6 +661,10 @@ export default function App() {
       )}
       <style>{`
         @keyframes fadeOverlay {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes overlayIn {
           from { opacity: 0; }
           to   { opacity: 1; }
         }

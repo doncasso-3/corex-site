@@ -436,82 +436,81 @@ export default function App() {
           </div>
         )}
 
-        {/* Top-right panel — glass, single row: ● ONLINE + clock + divider + hamburger */}
+        {/* Top-right panel + dropdown — unified container */}
         <div style={{
           position:"absolute", top: isMobile ? 16 : 28, right: isMobile ? 16 : 32, zIndex:20,
-          display:"flex", alignItems:"center", gap: isMobile ? "10px" : "14px",
-          background: glass.bg,
-          backdropFilter: glass.blur,
-          WebkitBackdropFilter: glass.blur,
-          border: glass.border,
-          borderRadius: glass.radius,
-          boxShadow: `${glass.inset}, ${glass.shadow}`,
-          padding: "10px 14px",
-          fontFamily:"'IBM Plex Mono', monospace",
+          display:"flex", flexDirection:"column", alignItems:"flex-end",
         }}>
-          <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.28em" }}>● ONLINE</div>
-          {!isMobile && (
-            <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"10px", letterSpacing:"0.08em" }}>{clock}</div>
-          )}
-          <div style={{ width:"1px", height:"14px", background:"rgba(255,255,255,0.08)", flexShrink:0 }} />
-          <button onClick={() => setMenuOpen(o => !o)} style={{
-            background:"none", border:"none", outline:"none",
-            cursor:"pointer", padding:"2px 0",
-            display:"flex", flexDirection:"column", gap:"5px", alignItems:"center",
+          {/* Glass pill */}
+          <div style={{
+            display:"flex", alignItems:"center", gap: isMobile ? "10px" : "14px",
+            background: glass.bg,
+            backdropFilter: glass.blur,
+            WebkitBackdropFilter: glass.blur,
+            border: glass.border,
+            borderRadius: menuOpen ? `${glass.radius} ${glass.radius} 0 0` : glass.radius,
+            boxShadow: `${glass.inset}, ${glass.shadow}`,
+            padding: "10px 14px",
+            fontFamily:"'IBM Plex Mono', monospace",
+            transition: "border-radius 0.2s ease",
           }}>
-            {[0,1,2].map(j => (
-              <div key={j} style={{
-                width:"20px", height:"1px",
-                background: menuOpen ? ACCENT : "rgba(255,255,255,0.75)",
-                transition:"all 0.25s",
-                transform: menuOpen
-                  ? j===0 ? "rotate(45deg) translate(4px,4px)"
-                  : j===2 ? "rotate(-45deg) translate(4px,-4px)"
-                  : "scaleX(0)"
-                  : "none",
-              }} />
-            ))}
-          </button>
-        </div>
-
-        {/* Dropdown nav — glass */}
-        <div style={{
-          position:"absolute", top:0, right:0, zIndex:15,
-          width: isMobile ? "100vw" : "260px",
-          background:"rgba(6,6,8,0.82)",
-          backdropFilter: glass.blurHeavy,
-          WebkitBackdropFilter: glass.blurHeavy,
-          borderRadius: "0 0 10px 10px",
-          borderLeft: "1px solid rgba(255,255,255,0.07)",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
-          boxShadow: "-8px 0 40px rgba(0,0,0,0.5)",
-          maxHeight: menuOpen ? "100vh" : "0",
-          overflow:"hidden",
-          transition:"max-height 0.45s cubic-bezier(0.16,1,0.3,1)",
-        }}>
-          <div style={{ padding:"72px 28px 28px", overflowY:"auto", maxHeight:"100vh" }}>
-            {NODES.map((n) => (
-              <div key={n.id} onClick={() => navigate(n.id)} style={{
-                display:"flex", alignItems:"center", gap:"14px",
-                padding:"11px 0",
-                cursor:"pointer", fontFamily:"'IBM Plex Mono', monospace",
-                transition:"padding-left 0.15s",
-              }}
-                onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.paddingLeft = "8px"}
-                onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.paddingLeft = "0px"}
-              >
-                <div style={{
-                  width:"6px", height:"6px", borderRadius:"50%", flexShrink:0,
-                  background: n.primer ? ACCENT : "rgba(255,255,255,0.3)",
-                  boxShadow: n.primer ? `0 0 8px ${ACCENT}` : "none",
+            <div style={{ color:ACCENT, fontSize:"11px", letterSpacing:"0.28em" }}>● ONLINE</div>
+            {!isMobile && (
+              <div style={{ color:"rgba(255,255,255,0.18)", fontSize:"10px", letterSpacing:"0.08em" }}>{clock}</div>
+            )}
+            <div style={{ width:"1px", height:"14px", background:"rgba(255,255,255,0.08)", flexShrink:0 }} />
+            <button onClick={() => setMenuOpen(o => !o)} style={{
+              background:"none", border:"none", outline:"none",
+              cursor:"pointer", padding:"2px 0",
+              display:"flex", flexDirection:"column", gap:"5px", alignItems:"center",
+            }}>
+              {[0,1,2].map(j => (
+                <div key={j} style={{
+                  width:"20px", height:"1px",
+                  background: menuOpen ? ACCENT : "rgba(255,255,255,0.75)",
+                  transition:"all 0.25s",
+                  transform: menuOpen
+                    ? j===0 ? "rotate(45deg) translate(4px,4px)"
+                    : j===2 ? "rotate(-45deg) translate(4px,-4px)"
+                    : "scaleX(0)"
+                    : "none",
                 }} />
-                <div style={{ flex:1 }}>
-                  <div style={{ color: n.primer ? ACCENT : "#fff", fontSize:"15px", letterSpacing:"0.18em" }}>{n.label}</div>
-                  <div style={{ color:"rgba(255,255,255,0.25)", fontSize:"10px", letterSpacing:"0.12em", marginTop:"2px" }}>{n.sub}</div>
+              ))}
+            </button>
+          </div>
+
+          {/* Dropdown — transparent, drops from pill */}
+          <div style={{
+            width: isMobile ? `calc(100vw - 32px)` : "260px",
+            background: "transparent",
+            maxHeight: menuOpen ? "80vh" : "0",
+            overflow:"hidden",
+            transition:"max-height 0.45s cubic-bezier(0.16,1,0.3,1)",
+          }}>
+            <div style={{ padding:"12px 4px 20px" }}>
+              {NODES.map((n) => (
+                <div key={n.id} onClick={() => navigate(n.id)} style={{
+                  display:"flex", alignItems:"center", gap:"14px",
+                  padding:"11px 10px",
+                  cursor:"pointer", fontFamily:"'IBM Plex Mono', monospace",
+                  transition:"padding-left 0.15s",
+                }}
+                  onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.paddingLeft = "18px"}
+                  onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.paddingLeft = "10px"}
+                >
+                  <div style={{
+                    width:"6px", height:"6px", borderRadius:"50%", flexShrink:0,
+                    background: n.primer ? ACCENT : "rgba(255,255,255,0.3)",
+                    boxShadow: n.primer ? `0 0 8px ${ACCENT}` : "none",
+                  }} />
+                  <div style={{ flex:1 }}>
+                    <div style={{ color: n.primer ? ACCENT : "#fff", fontSize:"15px", letterSpacing:"0.18em" }}>{n.label}</div>
+                    <div style={{ color:"rgba(255,255,255,0.25)", fontSize:"10px", letterSpacing:"0.12em", marginTop:"2px" }}>{n.sub}</div>
+                  </div>
+                  {n.primer && <div style={{ color:ACCENT, fontSize:"10px", letterSpacing:"0.18em" }}>START</div>}
                 </div>
-                {n.primer && <div style={{ color:ACCENT, fontSize:"10px", letterSpacing:"0.18em" }}>START</div>}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
